@@ -8,7 +8,7 @@ import { store } from '@/store/store';
 import { AuthProvider } from '@/hooks/useAuth';
 import { FacebookPixelTracker } from '@/components/tracking/FacebookPixelTracker';
 import GoogleAnalyticsTracker from '@/components/tracking/GoogleAnalyticsTracker';
-import TulshiLandingPage from '@/pages/TulshiLandingPage';
+import FashionHomePage from '@/pages/FashionHomePage';
 import OrderConfirmationPage from '@/pages/OrderConfirmationPage';
 import AuthPage from '@/pages/AuthPage';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -48,7 +48,7 @@ const App = () => (
             <GoogleAnalyticsTracker />
             <Routes>
               {/* Main Landing Page */}
-              <Route path="/" element={<TulshiLandingPage />} />
+              <Route path="/" element={<FashionHomePage />} />
               <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
               <Route path="/auth" element={<AuthPage />} />
               {/* Admin Routes */}
@@ -76,7 +76,7 @@ const App = () => (
               
               
               {/* Catch all - redirect to main page */}
-              <Route path="*" element={<TulshiLandingPage />} />
+              <Route path="*" element={<FashionHomePage />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
