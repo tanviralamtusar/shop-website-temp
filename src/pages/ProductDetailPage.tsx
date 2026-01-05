@@ -323,37 +323,24 @@ const ProductDetailPage = () => {
             {/* Variation Selector */}
             {hasVariations && (
               <div className="space-y-3">
-                <p className="text-sm font-bold text-foreground">
-                  ওজন নির্বাচন করুন: <span className="text-primary">{selectedVariation?.name}</span>
+                <p className="text-sm text-muted-foreground">
+                  ওজন নির্বাচন করুন: <span className="font-semibold text-foreground">{selectedVariation?.name}</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {product.variations!.map((variation) => {
-                    const isFreeDelivery = variation.name.toLowerCase().includes('5kg') || 
-                                           variation.name.includes('৫কেজি') ||
-                                           variation.name === '5 KG';
-                    return (
-                      <button
-                        key={variation.id}
-                        onClick={() => setSelectedVariation(variation)}
-                        className={`min-w-[70px] px-4 py-3 rounded-lg text-sm font-bold border-2 transition-all ${
-                          selectedVariation?.id === variation.id
-                            ? 'border-primary bg-primary text-primary-foreground shadow-lg'
-                            : 'border-border bg-background text-foreground hover:border-primary hover:bg-muted'
-                        }`}
-                      >
-                        {variation.name}
-                      </button>
-                    );
-                  })}
+                  {product.variations!.map((variation) => (
+                    <button
+                      key={variation.id}
+                      onClick={() => setSelectedVariation(variation)}
+                      className={`min-w-[60px] px-4 py-2.5 rounded-full text-sm font-medium border transition-all ${
+                        selectedVariation?.id === variation.id
+                          ? 'border-foreground bg-foreground text-background'
+                          : 'border-border bg-background text-foreground hover:border-foreground'
+                      }`}
+                    >
+                      {variation.name}
+                    </button>
+                  ))}
                 </div>
-                {/* Free Delivery Badge */}
-                {selectedVariation && (selectedVariation.name.toLowerCase().includes('5kg') || 
-                  selectedVariation.name.includes('৫কেজি') || 
-                  selectedVariation.name === '5 KG') && (
-                  <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 px-3 py-2 rounded-lg text-sm font-medium">
-                    🚚 ৫কেজি নিলে ডেলিভারী চার্জ ফ্রি!
-                  </div>
-                )}
               </div>
             )}
 
@@ -368,7 +355,7 @@ const ProductDetailPage = () => {
                   <span className="text-lg text-muted-foreground line-through">
                     {formatPrice(displayOriginalPrice)}
                   </span>
-                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">
+                  <Badge className="bg-[#6B8E23] hover:bg-[#556B2F] text-white border-0 px-2 py-0.5 text-xs">
                     {discountAmount} ৳ off
                   </Badge>
                 </>
@@ -378,30 +365,30 @@ const ProductDetailPage = () => {
             {/* Stock Status */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground">STATUS:</span>
-              <span className={`font-bold ${currentStock > 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+              <span className={`font-bold ${currentStock > 0 ? 'text-[#6B8E23]' : 'text-destructive'}`}>
                 {currentStock > 0 ? 'In Stock' : 'Out of Stock'}
               </span>
             </div>
 
             {/* Happy Customers Badge */}
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              <span className="font-semibold">14,360+ Happy Customers</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-5 w-5 text-[#6B8E23]" />
+              <span className="font-medium">14,360+ Happy Customers</span>
             </div>
 
             {/* Short Description */}
             {product.short_description && (
-              <div className="space-y-3">
-                <p className="text-muted-foreground whitespace-pre-line">{product.short_description}</p>
-              </div>
+              <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+                {product.short_description}
+              </p>
             )}
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <Button 
                 variant="outline"
                 size="lg" 
-                className="w-full font-semibold"
+                className="w-full h-12 font-semibold border-2 border-foreground hover:bg-muted"
                 onClick={handleAddToCart}
                 disabled={currentStock === 0}
               >
@@ -410,7 +397,7 @@ const ProductDetailPage = () => {
               </Button>
               <Button 
                 size="lg" 
-                className="w-full bg-foreground text-background hover:bg-foreground/90 font-semibold"
+                className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 font-semibold"
                 onClick={handleBuyNow}
                 disabled={currentStock === 0}
               >
@@ -421,9 +408,8 @@ const ProductDetailPage = () => {
             {/* Call Now Button */}
             {socialSettings?.call_enabled && socialSettings?.call_number && (
               <Button 
-                variant="outline"
                 size="lg" 
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white border-0 font-semibold"
+                className="w-full h-12 bg-[#6B8E23] hover:bg-[#556B2F] text-white font-semibold"
                 onClick={handleCallNow}
               >
                 <Phone className="h-4 w-4 mr-2" />
@@ -436,10 +422,10 @@ const ProductDetailPage = () => {
               <Button 
                 variant="outline"
                 size="lg" 
-                className="w-full bg-background border-2 border-foreground hover:bg-muted font-semibold"
+                className="w-full h-12 bg-background border-2 border-foreground hover:bg-muted font-semibold"
                 onClick={handleMessenger}
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 mr-2 fill-current">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-[#0084FF]">
                   <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.13.26.35.27.57l.05 1.78c.02.59.61.98 1.17.78l1.99-.8c.17-.07.36-.08.53-.04.9.24 1.87.37 2.85.37 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm5.89 7.65l-2.83 4.47c-.44.7-1.36.89-2.03.42l-2.25-1.68c-.2-.15-.47-.15-.66 0l-3.04 2.3c-.4.31-.94-.15-.67-.58l2.83-4.47c.44-.7 1.36-.89 2.03-.42l2.25 1.68c.2.15.47.15.66 0l3.04-2.3c.4-.31.94.15.67.58z"/>
                 </svg>
                 ম্যাসেঞ্জার অর্ডার
