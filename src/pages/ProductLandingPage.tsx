@@ -363,34 +363,75 @@ GallerySection.displayName = 'GallerySection';
 
 // ====== Video Section ======
 const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  
   if (!videoUrl) return null;
 
-  // Convert YouTube URL to embed format
-  const getEmbedUrl = (url: string): string | null => {
+  // Detect video type and get embed info
+  const getVideoInfo = (url: string): { 
+    embedUrl: string | null; 
+    type: 'youtube' | 'facebook' | 'direct' | 'embed' | null;
+    isVertical: boolean;
+  } => {
     // Handle YouTube URLs
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(youtubeRegex);
-    if (match) {
-      return `https://www.youtube.com/embed/${match[1]}?autoplay=0&rel=0`;
+    const youtubeMatch = url.match(youtubeRegex);
+    if (youtubeMatch) {
+      // Check for YouTube Shorts (vertical)
+      const isShorts = url.includes('/shorts/');
+      return {
+        embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=0&rel=0`,
+        type: 'youtube',
+        isVertical: isShorts
+      };
+    }
+    
+    // Handle Facebook video URLs (reels, videos, watch)
+    // Facebook Reels: https://www.facebook.com/reel/123456789
+    // Facebook Videos: https://www.facebook.com/watch/?v=123456789 or https://www.facebook.com/username/videos/123456789
+    const facebookReelRegex = /facebook\.com\/reel\/(\d+)/;
+    const facebookWatchRegex = /facebook\.com\/watch\/?\?v=(\d+)/;
+    const facebookVideoRegex = /facebook\.com\/(?:[^\/]+\/)?videos\/(\d+)/;
+    const facebookShareRegex = /fb\.watch\/([a-zA-Z0-9_-]+)/;
+    
+    const reelMatch = url.match(facebookReelRegex);
+    const watchMatch = url.match(facebookWatchRegex);
+    const videoMatch = url.match(facebookVideoRegex);
+    const shareMatch = url.match(facebookShareRegex);
+    
+    if (reelMatch || watchMatch || videoMatch || shareMatch) {
+      // Facebook reels are vertical (9:16), regular videos are horizontal (16:9)
+      const isReel = !!reelMatch || url.includes('reel');
+      const encodedUrl = encodeURIComponent(url);
+      return {
+        embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodedUrl}&show_text=false&width=${isReel ? '350' : '560'}`,
+        type: 'facebook',
+        isVertical: isReel
+      };
     }
     
     // Handle direct video URLs (mp4, webm, etc.)
     if (url.match(/\.(mp4|webm|ogg)$/i)) {
-      return url;
+      return { embedUrl: url, type: 'direct', isVertical: false };
     }
     
     // For other embed URLs, return as-is
     if (url.includes('embed') || url.includes('player')) {
-      return url;
+      return { embedUrl: url, type: 'embed', isVertical: false };
     }
     
-    return null;
+    return { embedUrl: null, type: null, isVertical: false };
   };
 
-  const embedUrl = getEmbedUrl(videoUrl);
-  const isDirectVideo = videoUrl.match(/\.(mp4|webm|ogg)$/i);
+  const { embedUrl, type, isVertical } = getVideoInfo(videoUrl);
+  const isDirectVideo = type === 'direct';
 
-  if (!embedUrl && !isDirectVideo) return null;
+  if (!embedUrl) return null;
+
+  // Aspect ratio classes based on video orientation
+  const aspectClass = isVertical 
+    ? 'aspect-[9/16] max-w-sm' // Vertical video (reels)
+    : 'aspect-video max-w-4xl'; // Horizontal video (16:9)
 
   return (
     <section className="py-12 md:py-16 bg-gradient-to-br from-gray-900 to-gray-800">
@@ -411,9 +452,16 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto"
+          className={`mx-auto ${aspectClass}`}
         >
-          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
+          <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-black">
+            {/* Loading state */}
+            {!videoLoaded && type !== 'direct' && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            
             {isDirectVideo ? (
               <video 
                 src={videoUrl}
@@ -423,17 +471,48 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
               >
                 আপনার ব্রাউজার ভিডিও সাপোর্ট করে না।
               </video>
+            ) : type === 'facebook' ? (
+              <iframe
+                src={embedUrl}
+                title="Product Video"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                allowFullScreen
+                scrolling="no"
+                frameBorder="0"
+                onLoad={() => setVideoLoaded(true)}
+                className="w-full h-full"
+                style={{ border: 'none', overflow: 'hidden' }}
+              />
             ) : (
               <iframe
-                src={embedUrl!}
+                src={embedUrl}
                 title="Product Video"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onLoad={() => setVideoLoaded(true)}
                 className="w-full h-full"
               />
             )}
           </div>
         </motion.div>
+        
+        {/* Video type indicator */}
+        {type && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-4"
+          >
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-sm text-gray-400">
+              <Play className="h-3 w-3" />
+              {type === 'facebook' && isVertical ? 'Facebook Reel' : 
+               type === 'facebook' ? 'Facebook Video' :
+               type === 'youtube' && isVertical ? 'YouTube Short' :
+               type === 'youtube' ? 'YouTube' : 'Video'}
+            </span>
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -630,14 +630,18 @@ export default function AdminProducts() {
                   id="video_url"
                   value={formData.video_url}
                   onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                  placeholder="YouTube বা অন্য ভিডিও লিংক পেস্ট করুন"
+                  placeholder="YouTube, Facebook Reel/Video লিংক পেস্ট করুন"
                 />
                 <p className="text-xs text-muted-foreground">
-                  YouTube লিংক (যেমন: https://www.youtube.com/watch?v=xxxxx) অথবা সরাসরি ভিডিও URL দিন
+                  সাপোর্টেড: YouTube, YouTube Shorts, Facebook Video, Facebook Reel, সরাসরি ভিডিও URL (.mp4)
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  উদাহরণ: https://www.facebook.com/reel/123456789 বা https://www.youtube.com/watch?v=xxxxx
                 </p>
                 {formData.video_url && (
-                  <div className="mt-2 p-2 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">✓ ভিডিও যুক্ত হয়েছে - ল্যান্ডিং পেজে দেখা যাবে</p>
+                  <div className="mt-2 p-2 bg-muted rounded-lg flex items-center gap-2">
+                    <span className="text-green-600">✓</span>
+                    <p className="text-sm text-muted-foreground">ভিডিও যুক্ত হয়েছে - ল্যান্ডিং পেজে স্বয়ংক্রিয়ভাবে সঠিক সাইজে দেখা যাবে</p>
                   </div>
                 )}
               </div>
