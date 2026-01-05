@@ -45,7 +45,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     }
     
     dispatch(addToCart({ product, variation: selectedVariation }));
-    // No popup - just add to cart silently
+    dispatch(openCart());
     
     // Track AddToCart event
     console.log('Firing AddToCart from ProductCard:', product.name);
