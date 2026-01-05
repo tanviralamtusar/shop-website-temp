@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { selectCartCount, toggleCart, addToCart } from '@/store/slices/cartSlice';
+import { selectCartCount, toggleCart, addToCart, openCart } from '@/store/slices/cartSlice';
 import { selectWishlistItems, toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
 import { Product as ProductType } from '@/types';
@@ -207,6 +207,7 @@ export default function FashionHomePage() {
       stock: 100,
     };
     dispatch(addToCart({ product: productForCart, quantity: 1 }));
+    dispatch(openCart());
     toast.success('কার্টে যোগ করা হয়েছে');
   };
 
