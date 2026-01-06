@@ -272,13 +272,20 @@ const SectionRenderer = ({ section, theme, slug }: SectionRendererProps) => {
       if (error) throw error;
       if (!data?.orderId) throw new Error('Order was not created');
 
-      // Navigate to confirmation page
+      // Navigate to confirmation page with items for tracking
       navigate('/order-confirmation', {
         state: {
           orderNumber: data.orderNumber || data.orderId,
           customerName: orderForm.name,
           phone: orderForm.phone,
           total: total,
+          items: [{
+            productId: product.id,
+            productName: product.name,
+            price: variation.price,
+            quantity: orderForm.quantity,
+          }],
+          numItems: orderForm.quantity,
           fromLandingPage: true,
           landingPageSlug: slug,
         }
