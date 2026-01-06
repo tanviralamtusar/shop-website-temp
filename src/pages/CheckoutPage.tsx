@@ -37,7 +37,7 @@ const CheckoutPage = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const { trackInitiateCheckout, isReady, setUserData } = useFacebookPixel();
-  const { trackInitiateCheckout: trackServerCheckout, trackPurchase: trackServerPurchase } = useServerTracking();
+  const { trackInitiateCheckout: trackServerCheckout } = useServerTracking();
   
   const cartItems = useAppSelector(selectCartItems);
   const cartTotal = useAppSelector(selectCartTotal);
@@ -278,25 +278,6 @@ const CheckoutPage = () => {
         shippingZone: shippingZone,
       });
       
-      // Track Purchase via Server-Side CAPI (most important for conversion tracking)
-      const contentIds = cartItems.map(item => item.product.id);
-      trackServerPurchase({
-        orderId: order.id,
-        contentIds,
-        value: total,
-        numItems: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-        currency: 'BDT',
-        userData: {
-          phone: shippingForm.phone,
-          firstName,
-          lastName,
-        },
-      }).then(result => {
-        console.log('[CAPI] Purchase tracking result:', result);
-      }).catch(err => {
-        console.error('[CAPI] Purchase tracking error:', err);
-      });
-      
       // Mark draft order as converted
       if (draftOrderId.current) {
         await supabase
@@ -314,15 +295,25 @@ const CheckoutPage = () => {
       // Mark as order placed before clearing cart to prevent redirect
       hasPlacedOrder.current = true;
       
+      // Prepare items data for tracking on confirmation page
+      const orderItems = cartItems.map(item => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+      }));
+      
       dispatch(clearCart());
       
-      // Navigate to confirmation page with order details
+      // Navigate to confirmation page with order details including items for tracking
       navigate('/order-confirmation', {
         state: {
           orderNumber: order.id,
           customerName: shippingForm.name,
           phone: shippingForm.phone,
           total: total,
+          items: orderItems,
+          numItems: cartItems.reduce((sum, item) => sum + item.quantity, 0),
         },
         replace: true, // Replace to prevent back navigation to checkout
       });

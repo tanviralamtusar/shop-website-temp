@@ -1040,6 +1040,13 @@ const ProductLandingPage = () => {
           customerName: form.name,
           phone: form.phone,
           total: form.total,
+          items: [{
+            productId: product.id,
+            productName: product.name,
+            price: price,
+            quantity: form.quantity,
+          }],
+          numItems: form.quantity,
           fromLandingPage: true,
           landingPageSlug: slug,
         }
