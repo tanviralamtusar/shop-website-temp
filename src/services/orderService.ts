@@ -22,6 +22,7 @@ export const createOrder = async (orderData: CreateOrderData): Promise<Order> =>
         userId: orderData.userId,
         items: orderData.items.map((i) => ({
           productId: i.product.id,
+          variationId: i.variation?.id,
           quantity: i.quantity,
           // Provide extra fields so orders can still be placed when the catalog uses non-UUID mock ids
           productName: i.product.name,
@@ -43,16 +44,43 @@ export const createOrder = async (orderData: CreateOrderData): Promise<Order> =>
 
   const { data, error } = invokeResult;
 
+  // The supabase functions SDK returns the response body in 'data' even for error status codes
+  // but sets 'error' to indicate there was an HTTP error
   if (error) {
+    // Log the full error structure for debugging
+    console.error('Place order error:', JSON.stringify(error, null, 2));
+    console.error('Place order data:', JSON.stringify(data, null, 2));
+    
+    // Try to get error message from 'data' first (which contains the JSON response body)
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+    
+    // Fallback: try different paths in the error object
     const anyErr = error as any;
-    const details =
-      anyErr?.context?.body?.error ||
-      anyErr?.context?.body?.message ||
-      anyErr?.context?.body ||
-      anyErr?.message ||
-      anyErr?.name ||
-      'Failed to place order';
-    throw new Error(typeof details === 'string' ? details : JSON.stringify(details));
+    let errorMessage = 'Failed to place order';
+    
+    if (anyErr?.context?.body) {
+      try {
+        const body = typeof anyErr.context.body === 'string' 
+          ? JSON.parse(anyErr.context.body) 
+          : anyErr.context.body;
+        errorMessage = body?.error || body?.message || errorMessage;
+      } catch {
+        if (typeof anyErr.context.body === 'string') {
+          errorMessage = anyErr.context.body;
+        }
+      }
+    } else if (anyErr?.message) {
+      errorMessage = anyErr.message;
+    }
+    
+    throw new Error(errorMessage);
+  }
+  
+  // Also check if data contains an error (for edge cases)
+  if (data?.error) {
+    throw new Error(data.error);
   }
 
   if (!data?.orderId) {
