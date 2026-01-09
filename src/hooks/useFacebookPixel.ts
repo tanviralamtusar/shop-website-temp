@@ -212,41 +212,107 @@ export const useFacebookPixel = () => {
     }
   }, [config]);
 
-  const trackPageView = useCallback(() => {
-    if (config?.enabled && window.fbq) {
-      console.log('Tracking PageView');
-      window.fbq('track', 'PageView');
-    }
-  }, [config]);
+  // Generate unique event ID for deduplication between pixel and CAPI
+  const generateEventId = useCallback((eventName: string): string => {
+    return `${eventName}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  }, []);
 
+  const trackPageView = useCallback((eventId?: string) => {
+    if (config?.enabled && window.fbq) {
+      const id = eventId || generateEventId('PageView');
+      console.log('Tracking PageView with event_id:', id);
+      window.fbq('track', 'PageView', {}, { eventID: id });
+      return id;
+    }
+    return null;
+  }, [config, generateEventId]);
+
+  const trackViewContentWithEventId = useCallback(
+    (params: { content_ids: string[]; content_name: string; content_type: string; value: number; currency: string }, eventId?: string) => {
+      if (config?.enabled && window.fbq) {
+        const id = eventId || generateEventId('ViewContent');
+        console.log('Tracking ViewContent with event_id:', id, params);
+        window.fbq('track', 'ViewContent', params, { eventID: id });
+        return id;
+      }
+      return null;
+    },
+    [config, generateEventId]
+  );
+
+  const trackAddToCartWithEventId = useCallback(
+    (params: { content_ids: string[]; content_name: string; content_type: string; value: number; currency: string }, eventId?: string) => {
+      if (config?.enabled && window.fbq) {
+        const id = eventId || generateEventId('AddToCart');
+        console.log('Tracking AddToCart with event_id:', id, params);
+        window.fbq('track', 'AddToCart', params, { eventID: id });
+        return id;
+      }
+      return null;
+    },
+    [config, generateEventId]
+  );
+
+  const trackInitiateCheckoutWithEventId = useCallback(
+    (params: { content_ids: string[]; num_items: number; value: number; currency: string }, eventId?: string) => {
+      if (config?.enabled && window.fbq) {
+        const id = eventId || generateEventId('InitiateCheckout');
+        console.log('Tracking InitiateCheckout with event_id:', id, params);
+        window.fbq('track', 'InitiateCheckout', params, { eventID: id });
+        return id;
+      }
+      return null;
+    },
+    [config, generateEventId]
+  );
+
+  const trackPurchaseWithEventId = useCallback(
+    (params: { 
+      content_ids: string[]; 
+      content_type: string; 
+      value: number; 
+      currency: string; 
+      num_items: number;
+      email?: string;
+      phone?: string;
+    }, eventId?: string) => {
+      if (config?.enabled && window.fbq) {
+        // Update user data before purchase if provided
+        if (params.email || params.phone) {
+          setUserData({ email: params.email, phone: params.phone });
+        }
+        
+        const { email, phone, ...trackParams } = params;
+        const id = eventId || generateEventId('Purchase');
+        console.log('Tracking Purchase with event_id:', id, trackParams);
+        window.fbq('track', 'Purchase', trackParams, { eventID: id });
+        return id;
+      }
+      return null;
+    },
+    [config, setUserData, generateEventId]
+  );
+
+  // Legacy methods without event ID (for backward compatibility)
   const trackViewContent = useCallback(
     (params: { content_ids: string[]; content_name: string; content_type: string; value: number; currency: string }) => {
-      if (config?.enabled && window.fbq) {
-        console.log('Tracking ViewContent:', params);
-        window.fbq('track', 'ViewContent', params);
-      }
+      trackViewContentWithEventId(params);
     },
-    [config]
+    [trackViewContentWithEventId]
   );
 
   const trackAddToCart = useCallback(
     (params: { content_ids: string[]; content_name: string; content_type: string; value: number; currency: string }) => {
-      if (config?.enabled && window.fbq) {
-        console.log('Tracking AddToCart:', params);
-        window.fbq('track', 'AddToCart', params);
-      }
+      trackAddToCartWithEventId(params);
     },
-    [config]
+    [trackAddToCartWithEventId]
   );
 
   const trackInitiateCheckout = useCallback(
     (params: { content_ids: string[]; num_items: number; value: number; currency: string }) => {
-      if (config?.enabled && window.fbq) {
-        console.log('Tracking InitiateCheckout:', params);
-        window.fbq('track', 'InitiateCheckout', params);
-      }
+      trackInitiateCheckoutWithEventId(params);
     },
-    [config]
+    [trackInitiateCheckoutWithEventId]
   );
 
   const trackPurchase = useCallback(
@@ -259,28 +325,24 @@ export const useFacebookPixel = () => {
       email?: string;
       phone?: string;
     }) => {
-      if (config?.enabled && window.fbq) {
-        // Update user data before purchase if provided
-        if (params.email || params.phone) {
-          setUserData({ email: params.email, phone: params.phone });
-        }
-        
-        const { email, phone, ...trackParams } = params;
-        console.log('Tracking Purchase:', trackParams);
-        window.fbq('track', 'Purchase', trackParams);
-      }
+      trackPurchaseWithEventId(params);
     },
-    [config, setUserData]
+    [trackPurchaseWithEventId]
   );
 
   return {
     isEnabled: config?.enabled ?? false,
     isReady,
+    generateEventId,
     trackPageView,
     trackViewContent,
+    trackViewContentWithEventId,
     trackAddToCart,
+    trackAddToCartWithEventId,
     trackInitiateCheckout,
+    trackInitiateCheckoutWithEventId,
     trackPurchase,
+    trackPurchaseWithEventId,
     setUserData,
   };
 };

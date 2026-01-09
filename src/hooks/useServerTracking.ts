@@ -21,6 +21,7 @@ interface TrackEventParams {
   eventName: string;
   userData?: UserData;
   customData?: CustomData;
+  eventId?: string; // For deduplication with browser pixel
 }
 
 interface ProductItem {
@@ -148,12 +149,14 @@ export const useServerTracking = () => {
     eventName,
     userData = {},
     customData = {},
+    eventId,
   }: TrackEventParams): Promise<{ success: boolean; error?: string }> => {
     try {
-      console.log(`[CAPI] Sending ${eventName} event to server...`);
+      console.log(`[CAPI] Sending ${eventName} event to server...`, eventId ? `(event_id: ${eventId})` : '');
       
       const payload = {
         event_name: eventName,
+        event_id: eventId, // Pass event ID for deduplication
         user_data: {
           email: userData.email,
           phone: userData.phone,
@@ -276,6 +279,7 @@ export const useServerTracking = () => {
     eventName,
     userData = {},
     customData = {},
+    eventId,
   }: TrackEventParams): Promise<{ facebook: { success: boolean; error?: string }; google: { success: boolean; error?: string }; tiktok: { success: boolean; error?: string } }> => {
     // Map FB event names to GA4 event names
     const gaEventMap: Record<string, string> = {
@@ -297,7 +301,7 @@ export const useServerTracking = () => {
     })) || [];
 
     const [fbResult, gaResult, ttResult] = await Promise.all([
-      trackFacebookEvent({ eventName, userData, customData }),
+      trackFacebookEvent({ eventName, userData, customData, eventId }),
       trackGoogleEvent({
         eventName: gaEventMap[eventName] || eventName.toLowerCase(),
         value: customData.value,
@@ -313,10 +317,11 @@ export const useServerTracking = () => {
   /**
    * Track a page view event
    */
-  const trackPageView = useCallback(async (userData?: UserData) => {
+  const trackPageView = useCallback(async (userData?: UserData, eventId?: string) => {
     return trackServerEvent({
       eventName: 'PageView',
       userData,
+      eventId,
     });
   }, [trackServerEvent]);
   
