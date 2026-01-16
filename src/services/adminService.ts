@@ -240,6 +240,24 @@ export const updateOrderStatus = async (id: string, status: string, trackingNumb
   return data;
 };
 
+export const deleteOrder = async (id: string) => {
+  // First delete order items
+  const { error: itemsError } = await supabase
+    .from('order_items')
+    .delete()
+    .eq('order_id', id);
+
+  if (itemsError) throw itemsError;
+
+  // Then delete the order
+  const { error } = await supabase
+    .from('orders')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+};
+
 // Users Management
 export const getAllUsers = async () => {
   const { data: profiles, error: profilesError } = await supabase
