@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import HeroBanner from '@/components/layout/HeroBanner';
 import contactDatesImage from '@/assets/contact-dates.png';
 
 const ContactPage = () => {
@@ -73,7 +74,9 @@ const ContactPage = () => {
   ];
 
   return (
-    <div className="pt-32 pb-16">
+    <div className="pb-16">
+      {/* Hero Banner */}
+      <HeroBanner compact />
       {/* Hero Section with Date Background */}
       <section className="relative py-24 overflow-hidden">
         <div 
