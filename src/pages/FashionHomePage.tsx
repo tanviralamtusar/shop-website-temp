@@ -575,85 +575,130 @@ export default function FashionHomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {/* Two Pcs */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="group cursor-pointer"
-              onClick={() => navigate('/category/two-pcs')}
-            >
-              <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-pink-100 to-pink-50">
-                <img
-                  src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80"
-                  alt="টু পিস"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-lg font-bold text-white">টু পিস</h3>
-                  <p className="text-white/80 text-sm">১২০+ প্রোডাক্ট</p>
-                </div>
-              </div>
-            </motion.div>
+            {/* Dynamic categories from database */}
+            {categories.slice(0, 4).map((category, index) => {
+              // Define fallback images for categories
+              const fallbackImages = [
+                'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80',
+                'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80',
+                'https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=400&q=80',
+                'https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=400&q=80',
+              ];
+              
+              const gradientColors = [
+                'from-pink-100 to-pink-50',
+                'from-purple-100 to-purple-50',
+                'from-amber-100 to-amber-50',
+                'from-red-100 to-red-50',
+              ];
+              
+              return (
+                <motion.div
+                  key={category.id}
+                  whileHover={{ y: -5 }}
+                  className="group cursor-pointer"
+                  onClick={() => navigate(`/products?category=${category.slug}`)}
+                >
+                  <div className={`relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br ${gradientColors[index % gradientColors.length]}`}>
+                    <img
+                      src={category.image_url || fallbackImages[index % fallbackImages.length]}
+                      alt={category.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = fallbackImages[index % fallbackImages.length];
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-lg font-bold text-white">{category.name}</h3>
+                      <p className="text-white/80 text-sm">{category.description || 'প্রোডাক্ট দেখুন'}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
 
-            {/* Three Pcs */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="group cursor-pointer"
-              onClick={() => navigate('/category/three-pcs')}
-            >
-              <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-purple-100 to-purple-50">
-                <img
-                  src="https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80"
-                  alt="থ্রি পিস"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-lg font-bold text-white">থ্রি পিস</h3>
-                  <p className="text-white/80 text-sm">৮৫+ প্রোডাক্ট</p>
-                </div>
-              </div>
-            </motion.div>
+            {/* Show placeholders if no categories exist */}
+            {categories.length === 0 && (
+              <>
+                <motion.div
+                  whileHover={{ y: -5 }}
+                  className="group cursor-pointer"
+                  onClick={() => navigate('/category/two-pcs')}
+                >
+                  <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-pink-100 to-pink-50">
+                    <img
+                      src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80"
+                      alt="টু পিস"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-lg font-bold text-white">টু পিস</h3>
+                      <p className="text-white/80 text-sm">১২০+ প্রোডাক্ট</p>
+                    </div>
+                  </div>
+                </motion.div>
 
-            {/* New Arrivals */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="group cursor-pointer"
-              onClick={() => navigate('/products?filter=new')}
-            >
-              <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-amber-100 to-amber-50">
-                <img
-                  src="https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=400&q=80"
-                  alt="নতুন আগমন"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-lg font-bold text-white">নতুন আগমন</h3>
-                  <p className="text-white/80 text-sm">এই সপ্তাহে</p>
-                </div>
-              </div>
-            </motion.div>
+                <motion.div
+                  whileHover={{ y: -5 }}
+                  className="group cursor-pointer"
+                  onClick={() => navigate('/category/three-pcs')}
+                >
+                  <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-purple-100 to-purple-50">
+                    <img
+                      src="https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80"
+                      alt="থ্রি পিস"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-lg font-bold text-white">থ্রি পিস</h3>
+                      <p className="text-white/80 text-sm">৮৫+ প্রোডাক্ট</p>
+                    </div>
+                  </div>
+                </motion.div>
 
-            {/* Sale */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="group cursor-pointer"
-              onClick={() => navigate('/products?filter=sale')}
-            >
-              <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-red-100 to-red-50">
-                <img
-                  src="https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=400&q=80"
-                  alt="সেল"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-lg font-bold text-white">সেল 🔥</h3>
-                  <p className="text-white/80 text-sm">৫০% পর্যন্ত ছাড়</p>
-                </div>
-              </div>
-            </motion.div>
+                <motion.div
+                  whileHover={{ y: -5 }}
+                  className="group cursor-pointer"
+                  onClick={() => navigate('/products?filter=new')}
+                >
+                  <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-amber-100 to-amber-50">
+                    <img
+                      src="https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=400&q=80"
+                      alt="নতুন আগমন"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-lg font-bold text-white">নতুন আগমন</h3>
+                      <p className="text-white/80 text-sm">এই সপ্তাহে</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5 }}
+                  className="group cursor-pointer"
+                  onClick={() => navigate('/products?filter=sale')}
+                >
+                  <div className="relative overflow-hidden rounded-2xl aspect-square bg-gradient-to-br from-red-100 to-red-50">
+                    <img
+                      src="https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=400&q=80"
+                      alt="সেল"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-lg font-bold text-white">সেল 🔥</h3>
+                      <p className="text-white/80 text-sm">৫০% পর্যন্ত ছাড়</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </>
+            )}
           </div>
         </div>
       </section>
