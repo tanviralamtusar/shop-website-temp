@@ -29,9 +29,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, Send, Printer, Globe, UserPlus, Plus, Check, Tag, RefreshCw, RotateCcw, Loader2, UserCheck, History } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, Send, Printer, Globe, UserPlus, Plus, Check, Tag, RefreshCw, RotateCcw, Loader2, UserCheck, History, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getAllOrders, updateOrderStatus } from '@/services/adminService';
+import { getAllOrders, updateOrderStatus, deleteOrder } from '@/services/adminService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { CourierHistoryDialog } from '@/components/admin/CourierHistoryDialog';
 import { CourierHistoryInline } from '@/components/admin/CourierHistoryInline';
@@ -129,6 +139,9 @@ export default function AdminOrders() {
   const [isManualOrderOpen, setIsManualOrderOpen] = useState(false);
   const [steadfastStatuses, setSteadfastStatuses] = useState<Record<string, SteadfastStatus>>({});
   const [loadingStatuses, setLoadingStatuses] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -486,6 +499,30 @@ export default function AdminOrders() {
     } finally {
       setBulkStatusChanging(false);
     }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+    
+    setDeleting(true);
+    try {
+      await deleteOrder(orderToDelete.id);
+      toast.success(`Order ${orderToDelete.order_number} deleted successfully`);
+      setIsDeleteDialogOpen(false);
+      setOrderToDelete(null);
+      setIsDetailOpen(false);
+      loadOrders();
+    } catch (error) {
+      console.error('Failed to delete order:', error);
+      toast.error('Failed to delete order');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (order: Order) => {
+    setOrderToDelete(order);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleTogglePrinted = async (orderId: string, currentValue: boolean) => {
@@ -917,13 +954,23 @@ export default function AdminOrders() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openOrderDetail(order)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openOrderDetail(order)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openDeleteDialog(order)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -1080,19 +1127,52 @@ export default function AdminOrders() {
                     />
                   </div>
                 </div>
-                <Button
-                  onClick={() => handleSendToSteadfast(selectedOrder)}
-                  disabled={sendingToSteadfast || !!selectedOrder.tracking_number}
-                  className="w-full mt-4"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {sendingToSteadfast ? 'Sending...' : selectedOrder.tracking_number ? 'Already Sent to Steadfast' : 'Send to Steadfast'}
-                </Button>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    onClick={() => handleSendToSteadfast(selectedOrder)}
+                    disabled={sendingToSteadfast || !!selectedOrder.tracking_number}
+                    className="flex-1"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {sendingToSteadfast ? 'Sending...' : selectedOrder.tracking_number ? 'Already Sent to Steadfast' : 'Send to Steadfast'}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => openDeleteDialog(selectedOrder)}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete order <strong>{orderToDelete?.order_number}</strong>? 
+              This action cannot be undone and will permanently remove the order and all its items.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrder}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : 'Delete Order'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <InvoicePrintDialog
         orders={orders.filter((o) => selectedOrderIds.has(o.id))}
