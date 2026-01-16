@@ -162,8 +162,8 @@ export default function FashionHomePage() {
 
   const features = [
     { icon: Truck, title: 'দ্রুত ডেলিভারি', desc: 'সারাদেশে ফ্রি ডেলিভারি' },
-    { icon: RotateCcw, title: 'ইজি রিটার্ন', desc: '৭ দিনের রিটার্ন পলিসি' },
-    { icon: Shield, title: 'নিরাপদ পেমেন্ট', desc: '১০০% সিকিউর চেকআউট' },
+    { icon: RotateCcw, title: 'ইনস্ট্যান্ট চেক', desc: 'রিটার্ন পলিসি' },
+    { icon: Shield, title: 'ক্যাশ অন ডেলিভারি', desc: 'পণ্য হাতে পেয়ে পেমেন্ট' },
     { icon: Headphones, title: '২৪/৭ সাপোর্ট', desc: 'যেকোনো সময় যোগাযোগ' },
   ];
 
