@@ -1,11 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  Facebook, 
-  Instagram, 
-  Youtube,
-  Mail,
   Phone,
+  Mail,
   MapPin
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,82 +29,87 @@ const Footer = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const siteName = siteSettings?.site_name || 'খেজুর বাজার';
+  const siteName = siteSettings?.site_name || 'এলিগ্যান্স';
   const siteLogo = siteSettings?.site_logo;
-  const phoneNumber = siteSettings?.header_phone || siteSettings?.call_number || '+880 1234-567890';
 
   return (
-    <footer className="bg-foreground text-primary-foreground">
+    <footer className="bg-[#1a1a2e] text-white">
       {/* Main Footer */}
-      <div className="container-custom py-16">
+      <div className="container mx-auto px-4 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              {siteLogo && (
+            <div className="flex items-center gap-3">
+              {siteLogo ? (
                 <img 
                   src={siteLogo} 
                   alt={siteName} 
                   className="h-10 w-auto"
                 />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center">
+                  <span className="text-white text-lg">✦</span>
+                </div>
               )}
-              <h2 className="text-2xl font-display font-bold">{siteName}</h2>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-orange-400 bg-clip-text text-transparent">
+                {siteName}
+              </h2>
             </div>
-            <p className="text-primary-foreground/70 leading-relaxed">
-              প্রিমিয়াম খেজুরের অনলাইন শপ - খাঁটি খেজুর পৌঁছে দিই প্রতিটি ঘরে।
+            <p className="text-gray-400 leading-relaxed text-sm">
+              প্রিমিয়াম কোয়ালিটি টু পিস ও থ্রি পিস কালেকশন। 
+              <span className="block text-pink-400 mt-1">আপনার স্টাইল, আপনার পছন্দ।</span>
             </p>
-            <div className="flex gap-4">
-              <a href="https://www.facebook.com/messages/t/282687191604098/" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary transition-colors">
-                <Youtube className="h-5 w-5" />
-              </a>
-            </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">দ্রুত লিংক</h3>
+            <h3 className="text-lg font-semibold mb-5 text-white">কুইক লিংক</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/products" className="text-primary-foreground/70 hover:text-primary transition-colors">
-                  সকল পণ্য
+                <Link to="/products" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  সব প্রোডাক্ট
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-primary-foreground/70 hover:text-primary transition-colors">
+                <Link to="/products?category=two-piece" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  টু পিস
+                </Link>
+              </li>
+              <li>
+                <Link to="/products?category=three-piece" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  থ্রি পিস
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
                   আমাদের সম্পর্কে
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-primary-foreground/70 hover:text-primary transition-colors">
-                  যোগাযোগ
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Customer Service */}
+          {/* Support */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">কাস্টমার সার্ভিস</h3>
+            <h3 className="text-lg font-semibold mb-5 text-white">সাহায্য</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/contact" className="text-primary-foreground/70 hover:text-primary transition-colors">
-                  অর্ডার ট্র্যাক করুন
+                <Link to="/contact" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  যোগাযোগ
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-primary-foreground/70 hover:text-primary transition-colors">
-                  রিটার্ন ও রিফান্ড
+                <Link to="/contact" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  শিপিং পলিসি
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-primary-foreground/70 hover:text-primary transition-colors">
-                  সাহায্য
+                <Link to="/contact" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  রিটার্ন পলিসি
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
+                  FAQ
                 </Link>
               </li>
             </ul>
@@ -115,23 +117,30 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">যোগাযোগ করুন</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-primary-foreground/70">
-                <Phone className="h-5 w-5 text-primary" />
-                <a href="tel:+8801995909243" className="hover:text-primary transition-colors">
+            <h3 className="text-lg font-semibold mb-5 text-white">যোগাযোগ</h3>
+            <ul className="space-y-4">
+              <li className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-pink-400 flex-shrink-0" />
+                <a href="tel:+8801995909243" className="text-gray-400 hover:text-pink-400 transition-colors text-sm">
                   01995-909243
                 </a>
               </li>
-              <li className="flex items-center gap-3 text-primary-foreground/70">
-                <Mail className="h-5 w-5 text-primary" />
-                <a href="https://www.facebook.com/messages/t/282687191604098/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              <li className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-pink-400 flex-shrink-0" />
+                <a 
+                  href="https://www.facebook.com/messages/t/282687191604098/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-pink-400 transition-colors text-sm"
+                >
                   Facebook Inbox
                 </a>
               </li>
-              <li className="flex items-start gap-3 text-primary-foreground/70">
-                <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                <span>Road-1, Mirpur-13, Dhaka-1216, Bangladesh</span>
+              <li className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-pink-400 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-400 text-sm">
+                  Mirpur-13, Dhaka-1216, Bangladesh
+                </span>
               </li>
             </ul>
           </div>
@@ -139,21 +148,11 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-primary-foreground/10">
-        <div className="container-custom py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-primary-foreground/60 text-sm">
-              © {new Date().getFullYear()} {siteName}। সর্বস্বত্ব সংরক্ষিত।
-            </p>
-            <div className="flex items-center gap-6 text-sm">
-              <Link to="/contact" className="text-primary-foreground/60 hover:text-primary transition-colors">
-                গোপনীয়তা নীতি
-              </Link>
-              <Link to="/contact" className="text-primary-foreground/60 hover:text-primary transition-colors">
-                শর্তাবলী
-              </Link>
-            </div>
-          </div>
+      <div className="border-t border-gray-700/50">
+        <div className="container mx-auto px-4 py-5">
+          <p className="text-gray-500 text-sm text-center">
+            © {new Date().getFullYear()} {siteName}। সর্বস্বত্ব সংরক্ষিত।
+          </p>
         </div>
       </div>
     </footer>
