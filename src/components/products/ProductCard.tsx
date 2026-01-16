@@ -209,26 +209,26 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               </span>
             </div>
 
-            {/* Variations Selector */}
+            {/* Variations Selector - Compact Size Display */}
             {hasVariations && (
-              <div className="space-y-2 mb-3">
-                <p className="text-xs font-medium text-muted-foreground">সাইজ নির্বাচন করুন:</p>
-                <div className="flex flex-wrap gap-1.5">
+              <div className="mb-3">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-medium text-muted-foreground shrink-0">Size:</span>
                   {product.variations!.map((variation) => {
-                    const isFreeDelivery = variation.name.toLowerCase().includes('5kg') || 
-                                           variation.name.includes('৫কেজি') ||
-                                           variation.name === '5 KG';
+                    // Extract just the number from the size name (e.g., "Size 36" -> "36")
+                    const sizeNumber = variation.name.replace(/[^0-9]/g, '') || variation.name;
                     return (
                       <button
                         key={variation.id}
                         onClick={(e) => handleVariationClick(e, variation)}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-md border-2 transition-all ${
+                        className={`min-w-[28px] h-7 px-1.5 text-xs font-semibold rounded border transition-all ${
                           selectedVariation?.id === variation.id
                             ? 'border-primary bg-primary text-primary-foreground'
                             : 'border-border bg-background text-foreground hover:border-primary'
                         }`}
+                        title={variation.name}
                       >
-                        {variation.name}
+                        {sizeNumber}
                       </button>
                     );
                   })}
@@ -237,7 +237,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 {selectedVariation && (selectedVariation.name.toLowerCase().includes('5kg') || 
                   selectedVariation.name.includes('৫কেজি') || 
                   selectedVariation.name === '5 KG') && (
-                  <p className="text-xs font-medium text-emerald-600">🚚 ফ্রি ডেলিভারি</p>
+                  <p className="text-xs font-medium text-emerald-600 mt-1">🚚 ফ্রি ডেলিভারি</p>
                 )}
               </div>
             )}
