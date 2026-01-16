@@ -57,7 +57,7 @@ const Footer = () => {
               প্রিমিয়াম খেজুরের অনলাইন শপ - খাঁটি খেজুর পৌঁছে দিই প্রতিটি ঘরে।
             </p>
             <div className="flex gap-4">
-              <a href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary transition-colors">
+              <a href="https://www.facebook.com/messages/t/282687191604098/" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
               <a href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary transition-colors">
@@ -119,17 +119,19 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-primary-foreground/70">
                 <Phone className="h-5 w-5 text-primary" />
-                <a href={`tel:${phoneNumber.replace(/\s/g, '')}`} className="hover:text-primary transition-colors">
-                  {phoneNumber}
+                <a href="tel:+8801995909243" className="hover:text-primary transition-colors">
+                  01995-909243
                 </a>
               </li>
               <li className="flex items-center gap-3 text-primary-foreground/70">
                 <Mail className="h-5 w-5 text-primary" />
-                <span>info@khejurerbajar.com</span>
+                <a href="https://www.facebook.com/messages/t/282687191604098/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                  Facebook Inbox
+                </a>
               </li>
               <li className="flex items-start gap-3 text-primary-foreground/70">
                 <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                <span>ঢাকা, বাংলাদেশ</span>
+                <span>Road-1, Mirpur-13, Dhaka-1216, Bangladesh</span>
               </li>
             </ul>
           </div>
