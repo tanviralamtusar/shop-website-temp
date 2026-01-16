@@ -167,13 +167,13 @@ export default function FashionHomePage() {
     { icon: Headphones, title: '২৪/৭ সাপোর্ট', desc: 'যেকোনো সময় যোগাযোগ' },
   ];
 
-  // Hero slides from banners or defaults
+  // Hero slides from banners or defaults (using actual product images)
   const defaultSlides = [
     {
       id: '1',
       title: 'নতুন টু পিস কালেকশন',
       subtitle: 'এক্সক্লুসিভ ডিজাইন, প্রিমিয়াম কোয়ালিটি - ৩০% পর্যন্ত ছাড়',
-      image: 'https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=1920&q=80',
+      image: 'https://modessi.shop/wp-content/uploads/2025/01/DSC7057.jpg',
       link: '/products?category=two-piece',
       badge: '৩০% ছাড়'
     },
@@ -181,7 +181,7 @@ export default function FashionHomePage() {
       id: '2',
       title: 'থ্রি পিস স্পেশাল',
       subtitle: 'প্রিমিয়াম ফেব্রিক, এলিগ্যান্ট ডিজাইন - নতুন আগমন',
-      image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=1920&q=80',
+      image: 'https://modessi.shop/wp-content/uploads/2025/01/DSC7224.jpg',
       link: '/products?category=three-piece',
       badge: 'নতুন'
     },
@@ -189,7 +189,7 @@ export default function FashionHomePage() {
       id: '3',
       title: 'সামার কালেকশন ২০২৬',
       subtitle: 'কমফোর্টেবল এবং স্টাইলিশ - গরমের জন্য পারফেক্ট',
-      image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=1920&q=80',
+      image: 'https://modessi.shop/wp-content/uploads/2025/01/DSC7100.jpg',
       link: '/products',
       badge: 'ট্রেন্ডিং'
     }
