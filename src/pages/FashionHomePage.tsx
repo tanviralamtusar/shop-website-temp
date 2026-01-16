@@ -574,22 +574,22 @@ export default function FashionHomePage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className={`grid grid-cols-2 gap-4 md:gap-6 ${categories.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
             {/* Dynamic categories from database */}
-            {categories.slice(0, 4).map((category, index) => {
-              // Define fallback images for categories
+            {categories.map((category, index) => {
+              // Define fallback images for categories - using reliable Unsplash images
               const fallbackImages = [
-                'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80',
-                'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80',
-                'https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=400&q=80',
-                'https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=400&q=80',
+                'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=80',
+                'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80',
+                'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80',
+                'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
               ];
               
               const gradientColors = [
-                'from-pink-100 to-pink-50',
-                'from-purple-100 to-purple-50',
+                'from-rose-100 to-rose-50',
+                'from-violet-100 to-violet-50',
                 'from-amber-100 to-amber-50',
-                'from-red-100 to-red-50',
+                'from-emerald-100 to-emerald-50',
               ];
               
               return (
