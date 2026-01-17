@@ -4,12 +4,14 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getEmbedUrl } from "@/lib/videoEmbed";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
 
 interface SectionPreviewProps {
   section: Section;
@@ -510,26 +512,12 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
       );
     }
 
-    // Convert YouTube watch URLs to embed URLs
-    const getEmbedUrl = (url: string): string => {
-      if (url.includes("youtube.com/embed") || url.includes("vimeo.com")) {
-        return url;
-      }
-      // YouTube Shorts URL
-      const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
-      if (shortsMatch) {
-        return `https://www.youtube.com/embed/${shortsMatch[1]}`;
-      }
-      // YouTube watch URL or youtu.be
-      const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-      if (youtubeMatch) {
-        return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-      }
-      return url;
-    };
-
     const embedUrl = getEmbedUrl(videoUrl);
-    const isEmbed = embedUrl.includes('youtube.com/embed') || embedUrl.includes('vimeo.com');
+    const isEmbed =
+      embedUrl.includes("youtube.com/embed") ||
+      embedUrl.includes("vimeo.com") ||
+      embedUrl.includes("facebook.com/plugins/video.php");
+
 
     return (
       <section className="py-8 px-6" style={{ backgroundColor: settings.backgroundColor }}>
@@ -544,7 +532,9 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
                 className="w-full h-full rounded-lg shadow-lg"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
               />
+
             ) : (
               <video
                 src={videoUrl}
