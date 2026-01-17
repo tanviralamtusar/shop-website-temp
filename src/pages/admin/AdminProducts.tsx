@@ -27,10 +27,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Package, Upload, X, Image as ImageIcon, Loader2, Play } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Package, Upload, X, Image as ImageIcon, Loader2, Play, CalendarIcon } from 'lucide-react';
 import { 
   getAllProducts, 
   createProduct, 
@@ -39,6 +45,9 @@ import {
   getAllCategories 
 } from '@/services/adminService';
 import { supabase } from '@/integrations/supabase/client';
+import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { DateRange } from 'react-day-picker';
 
 interface ProductVariation {
   id?: string;
@@ -69,6 +78,7 @@ interface Product {
   is_new: boolean | null;
   is_active: boolean | null;
   categories?: { id: string; name: string } | null;
+  created_at?: string;
 }
 
 interface Category {
@@ -109,6 +119,9 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState(initialFormState);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Date filter state
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   
   // Variations state
   const [variations, setVariations] = useState<ProductVariation[]>([]);
@@ -172,9 +185,23 @@ export default function AdminProducts() {
     }
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
+    
+    // Date filtering
+    if (dateRange?.from) {
+      const productDate = product.created_at ? new Date(product.created_at) : null;
+      if (!productDate) return false;
+      
+      const start = startOfDay(dateRange.from);
+      const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+      
+      const withinRange = isWithinInterval(productDate, { start, end });
+      return matchesSearch && withinRange;
+    }
+    
+    return matchesSearch;
+  });
 
   const openCreateDialog = () => {
     setEditingProduct(null);
@@ -807,14 +834,63 @@ export default function AdminProducts() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search products..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
-            />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+            
+            {/* Date Range Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal min-w-[240px]",
+                    !dateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "dd/MM/yyyy")} - {format(dateRange.to, "dd/MM/yyyy")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "dd/MM/yyyy")
+                    )
+                  ) : (
+                    <span>তারিখ অনুসারে ফিল্টার</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            {dateRange && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDateRange(undefined)}
+                className="text-destructive"
+              >
+                <X className="h-4 w-4 mr-1" />
+                ক্লিয়ার
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
