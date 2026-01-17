@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -20,13 +20,14 @@ import { selectWishlistItems } from '@/store/slices/wishlistSlice';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { categories } from '@/data/mockData';
-import siteLogo from '@/assets/site-logo.png';
+import defaultLogo from '@/assets/site-logo.png';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   
   const cartCount = useAppSelector(selectCartCount);
   const wishlistItems = useAppSelector(selectWishlistItems);
@@ -55,7 +56,7 @@ const Header = () => {
   });
 
   const siteName = headerSettings?.site_name || 'খেজুর বাজার';
-  const siteLogo = headerSettings?.site_logo || '';
+  const siteLogo = headerSettings?.site_logo || defaultLogo;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,6 +68,15 @@ const Header = () => {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    }
   };
 
   return (
@@ -86,16 +96,17 @@ const Header = () => {
           </Link>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-xl">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl">
             <div className="relative w-full">
               <Input
                 type="text"
-                placeholder="Search for products..."
+                placeholder="পণ্য খুঁজুন..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pr-12"
               />
               <Button 
+                type="submit"
                 variant="ghost" 
                 size="icon" 
                 className="absolute right-1 top-1/2 -translate-y-1/2"
@@ -103,7 +114,7 @@ const Header = () => {
                 <Search className="h-5 w-5" />
               </Button>
             </div>
-          </div>
+          </form>
 
           {/* Actions */}
           <div className="flex items-center gap-2 md:gap-4">
@@ -208,22 +219,23 @@ const Header = () => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden mt-4"
             >
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search for products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-12"
-                />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute right-1 top-1/2 -translate-y-1/2"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-              </div>
+            <form onSubmit={handleSearch} className="relative">
+              <Input
+                type="text"
+                placeholder="পণ্য খুঁজুন..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-12"
+              />
+              <Button 
+                type="submit"
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-1 top-1/2 -translate-y-1/2"
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            </form>
             </motion.div>
           )}
         </AnimatePresence>
