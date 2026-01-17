@@ -472,9 +472,23 @@ const CheckoutSection = memo(({ product, onSubmit, isSubmitting }: {
   const [shippingZone, setShippingZone] = useState<ShippingZone>('outside_dhaka');
   const formRef = useRef<HTMLFormElement>(null);
 
-  const selectedVariation = useMemo(() => 
-    product.variations.find(v => v.id === form.selectedVariationId),
-    [product.variations, form.selectedVariationId]
+  const variations = useMemo(() => {
+    // De-dupe by variation name to avoid showing the same "Size" multiple times
+    const seen = new Set<string>();
+    const out: ProductVariation[] = [];
+    for (const v of product.variations || []) {
+      const key = String(v.name || '').trim().toLowerCase();
+      if (!key) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(v);
+    }
+    return out;
+  }, [product.variations]);
+
+  const selectedVariation = useMemo(
+    () => variations.find(v => v.id === form.selectedVariationId),
+    [variations, form.selectedVariationId]
   );
 
   const unitPrice = selectedVariation?.price || product.price;
@@ -484,7 +498,7 @@ const CheckoutSection = memo(({ product, onSubmit, isSubmitting }: {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (product.variations.length > 0 && !form.selectedVariationId) {
+    if (variations.length > 0 && !form.selectedVariationId) {
       toast.error("সাইজ সিলেক্ট করুন");
       return;
     }
@@ -533,11 +547,11 @@ const CheckoutSection = memo(({ product, onSubmit, isSubmitting }: {
                 </div>
 
                 {/* Size Selection */}
-                {product.variations.length > 0 && (
+                {variations.length > 0 && (
                   <div className="mb-4">
                     <p className="text-sm font-medium text-gray-700 mb-2">সাইজ নির্বাচন করুন <span className="text-red-500">*</span></p>
                     <div className="flex flex-wrap gap-2">
-                      {product.variations.map((v) => (
+                      {variations.map((v) => (
                         <button
                           key={v.id}
                           type="button"
