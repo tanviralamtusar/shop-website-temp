@@ -24,7 +24,7 @@ type PlaceOrderBody = {
   notes?: string;
   invoiceNote?: string | null;
   steadfastNote?: string | null;
-  orderSource?: 'web' | 'manual';
+  orderSource?: 'web' | 'manual' | 'landing_page';
 };
 
 function isBangladeshPhone(phone: string) {
@@ -481,7 +481,7 @@ Deno.serve(async (req) => {
     const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 500) : null;
     const invoiceNote = typeof body.invoiceNote === 'string' ? body.invoiceNote.trim().slice(0, 500) : null;
     const steadfastNote = typeof body.steadfastNote === 'string' ? body.steadfastNote.trim().slice(0, 500) : null;
-    const orderSource = body.orderSource === 'manual' ? 'manual' : 'web';
+    const orderSource = body.orderSource === 'manual' ? 'manual' : (body.orderSource === 'landing_page' ? 'landing_page' : 'web');
 
     const orderId = crypto.randomUUID();
 
