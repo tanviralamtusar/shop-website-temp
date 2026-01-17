@@ -10,6 +10,7 @@ import { addToCart, openCart } from '@/store/slices/cartSlice';
 import { toggleWishlist, selectWishlistItems } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
 import { useFacebookPixel } from '@/hooks/useFacebookPixel';
+import { useServerTracking } from '@/hooks/useServerTracking';
 
 interface ProductCardProps {
   product: Product;
@@ -20,7 +21,8 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const wishlistItems = useAppSelector(selectWishlistItems);
-  const { trackAddToCart } = useFacebookPixel();
+  const { trackAddToCartWithEventId, generateEventId } = useFacebookPixel();
+  const { trackAddToCart: trackServerAddToCart } = useServerTracking();
   const isInWishlist = wishlistItems.some((item) => item.id === product.id);
   
   // State for selected variation - no auto-select, customer must choose manually
@@ -48,13 +50,25 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     dispatch(addToCart({ product, variation: selectedVariation }));
     dispatch(openCart());
     
-    // Track AddToCart event
-    console.log('Firing AddToCart from ProductCard:', product.name);
-    trackAddToCart({
+    // Track AddToCart event - both browser pixel and server CAPI
+    const eventId = generateEventId('AddToCart');
+    console.log('Firing AddToCart from ProductCard:', product.name, 'eventId:', eventId);
+    
+    // Browser pixel
+    trackAddToCartWithEventId({
       content_ids: [product.id],
       content_name: product.name,
       content_type: 'product',
       value: displayPrice,
+      currency: 'BDT',
+    }, eventId);
+    
+    // Server-side CAPI (runs in parallel)
+    trackServerAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: displayPrice,
+      quantity: 1,
       currency: 'BDT',
     });
     
@@ -74,13 +88,25 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     // Add to cart and navigate to checkout
     dispatch(addToCart({ product, variation: selectedVariation }));
     
-    // Track AddToCart event
-    console.log('Firing AddToCart (Buy Now) from ProductCard:', product.name);
-    trackAddToCart({
+    // Track AddToCart event - both browser pixel and server CAPI
+    const eventId = generateEventId('AddToCart');
+    console.log('Firing AddToCart (Buy Now) from ProductCard:', product.name, 'eventId:', eventId);
+    
+    // Browser pixel
+    trackAddToCartWithEventId({
       content_ids: [product.id],
       content_name: product.name,
       content_type: 'product',
       value: displayPrice,
+      currency: 'BDT',
+    }, eventId);
+    
+    // Server-side CAPI (runs in parallel)
+    trackServerAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: displayPrice,
+      quantity: 1,
       currency: 'BDT',
     });
     
