@@ -301,13 +301,25 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
 
   const isIframe = videoUrl.trim().startsWith('<iframe');
   
-  // Extract aspect ratio from iframe if available
+  // Extract aspect ratio and URL from iframe if available
   const extractIframeInfo = (html: string) => {
     const widthMatch = html.match(/width=["']?(\d+)/);
     const heightMatch = html.match(/height=["']?(\d+)/);
+    const hrefMatch = html.match(/href=([^&"'\s]+)/);
+    const srcMatch = html.match(/src=["']([^"']+)["']/);
     const width = widthMatch ? parseInt(widthMatch[1]) : 16;
     const height = heightMatch ? parseInt(heightMatch[1]) : 9;
-    return { aspectRatio: width / height };
+    
+    // Try to extract Facebook reel URL
+    let fbUrl = '';
+    if (hrefMatch) {
+      fbUrl = decodeURIComponent(hrefMatch[1]);
+    } else if (srcMatch && srcMatch[1].includes('facebook.com')) {
+      const innerHref = srcMatch[1].match(/href=([^&]+)/);
+      if (innerHref) fbUrl = decodeURIComponent(innerHref[1]);
+    }
+    
+    return { aspectRatio: width / height, fbUrl };
   };
   
   const getEmbedUrl = (url: string) => {
@@ -320,8 +332,21 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
   };
 
   const iframeInfo = isIframe ? extractIframeInfo(videoUrl) : null;
-  // For portrait videos (9:16), use taller container. For landscape (16:9), use standard aspect-video
   const isPortrait = iframeInfo && iframeInfo.aspectRatio < 1;
+  
+  // Modify iframe HTML to add proper attributes for cross-origin
+  const getModifiedIframeHtml = (html: string) => {
+    let modified = html
+      .replace(/width=["']?\d+["']?/gi, 'width="100%"')
+      .replace(/height=["']?\d+["']?/gi, 'height="100%"');
+    
+    // Add sandbox attribute if not present for better compatibility
+    if (!modified.includes('sandbox=')) {
+      modified = modified.replace('<iframe', '<iframe sandbox="allow-scripts allow-same-origin allow-popups allow-forms"');
+    }
+    
+    return modified;
+  };
 
   return (
     <section className="py-10 md:py-16 gradient-dark">
@@ -336,7 +361,7 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
         
         <div className={`max-w-3xl mx-auto ${isPortrait ? 'max-w-sm' : ''}`}>
           <div 
-            className="relative rounded-2xl overflow-hidden shadow-2xl bg-black ring-1 ring-white/10"
+            className="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-900 ring-1 ring-white/10"
             style={{ 
               aspectRatio: isPortrait ? '9/16' : '16/9'
             }}
@@ -344,9 +369,7 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
             {isIframe ? (
               <div 
                 className="absolute inset-0 [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!border-0" 
-                dangerouslySetInnerHTML={{ 
-                  __html: videoUrl.replace(/width=["']?\d+["']?/gi, 'width="100%"').replace(/height=["']?\d+["']?/gi, 'height="100%"')
-                }} 
+                dangerouslySetInnerHTML={{ __html: getModifiedIframeHtml(videoUrl) }} 
               />
             ) : videoUrl.match(/\.(mp4|webm|ogg)$/i) ? (
               <video 
@@ -366,6 +389,21 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
               />
             )}
           </div>
+          
+          {/* Fallback link for Facebook videos */}
+          {iframeInfo?.fbUrl && (
+            <div className="text-center mt-4">
+              <a 
+                href={iframeInfo.fbUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-accent hover:text-accent/80 transition-colors text-sm"
+              >
+                <Play className="h-4 w-4" />
+                ভিডিও লোড না হলে এখানে ক্লিক করুন
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </section>
