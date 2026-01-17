@@ -19,6 +19,7 @@ interface HeaderSettings {
 const AdminSiteSettings = () => {
   const queryClient = useQueryClient();
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [headerSettings, setHeaderSettings] = useState<HeaderSettings>({
     site_name: 'খেজুর বাজার',
     site_logo: '',
@@ -52,8 +53,9 @@ const AdminSiteSettings = () => {
   });
 
   // Update settings state when data is loaded
+  // Important: don't overwrite local edits due to automatic refetches
   useEffect(() => {
-    if (existingSettings) {
+    if (existingSettings && !isEditing) {
       setHeaderSettings({
         site_name: existingSettings.site_name || 'খেজুর বাজার',
         site_logo: existingSettings.site_logo || '',
@@ -61,7 +63,7 @@ const AdminSiteSettings = () => {
         header_promo_text: existingSettings.header_promo_text || 'Free shipping on orders over ৳2000',
       });
     }
-  }, [existingSettings]);
+  }, [existingSettings, isEditing]);
 
   // Save header settings mutation
   const saveHeaderMutation = useMutation({
@@ -85,6 +87,7 @@ const AdminSiteSettings = () => {
       }
     },
     onSuccess: () => {
+      setIsEditing(false);
       queryClient.invalidateQueries({ queryKey: ['admin-site-settings'] });
       queryClient.invalidateQueries({ queryKey: ['header-settings'] });
       toast.success('Header settings saved successfully');
@@ -104,6 +107,7 @@ const AdminSiteSettings = () => {
     if (!file) return;
 
     setUploadingLogo(true);
+    setIsEditing(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
@@ -119,7 +123,7 @@ const AdminSiteSettings = () => {
         .from('shop-assets')
         .getPublicUrl(filePath);
 
-      setHeaderSettings({ ...headerSettings, site_logo: publicUrl });
+      setHeaderSettings((prev) => ({ ...prev, site_logo: publicUrl }));
       toast.success('Logo uploaded successfully');
     } catch (error) {
       console.error('Error uploading logo:', error);
@@ -197,7 +201,10 @@ const AdminSiteSettings = () => {
                   <Input
                     placeholder="Or paste image URL"
                     value={headerSettings.site_logo}
-                    onChange={(e) => setHeaderSettings({ ...headerSettings, site_logo: e.target.value })}
+                    onChange={(e) => {
+                      setIsEditing(true);
+                      setHeaderSettings((prev) => ({ ...prev, site_logo: e.target.value }));
+                    }}
                   />
                 </div>
               </div>
@@ -210,7 +217,10 @@ const AdminSiteSettings = () => {
                 id="site_name"
                 placeholder="Your Store Name"
                 value={headerSettings.site_name}
-                onChange={(e) => setHeaderSettings({ ...headerSettings, site_name: e.target.value })}
+                onChange={(e) => {
+                  setIsEditing(true);
+                  setHeaderSettings((prev) => ({ ...prev, site_name: e.target.value }));
+                }}
               />
               <p className="text-xs text-muted-foreground">
                 The name displayed in the header next to your logo
@@ -224,7 +234,10 @@ const AdminSiteSettings = () => {
                 id="header_phone"
                 placeholder="+880 1234-567890"
                 value={headerSettings.header_phone}
-                onChange={(e) => setHeaderSettings({ ...headerSettings, header_phone: e.target.value })}
+                onChange={(e) => {
+                  setIsEditing(true);
+                  setHeaderSettings((prev) => ({ ...prev, header_phone: e.target.value }));
+                }}
               />
               <p className="text-xs text-muted-foreground">
                 Phone number displayed in the top bar
@@ -238,7 +251,10 @@ const AdminSiteSettings = () => {
                 id="header_promo_text"
                 placeholder="Free shipping on orders over ৳2000"
                 value={headerSettings.header_promo_text}
-                onChange={(e) => setHeaderSettings({ ...headerSettings, header_promo_text: e.target.value })}
+                onChange={(e) => {
+                  setIsEditing(true);
+                  setHeaderSettings((prev) => ({ ...prev, header_promo_text: e.target.value }));
+                }}
               />
               <p className="text-xs text-muted-foreground">
                 Promotional message shown in the header bar
