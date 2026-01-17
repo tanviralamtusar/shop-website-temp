@@ -25,6 +25,7 @@ import { addToCart, openCart } from '@/store/slices/cartSlice';
 import { toggleWishlist, selectWishlistItems } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
 import { useFacebookPixel } from '@/hooks/useFacebookPixel';
+import { useServerTracking } from '@/hooks/useServerTracking';
 import { supabase } from '@/integrations/supabase/client';
 
 const ProductDetailPage = () => {
@@ -39,7 +40,8 @@ const ProductDetailPage = () => {
   
   const dispatch = useAppDispatch();
   const wishlistItems = useAppSelector(selectWishlistItems);
-  const { trackViewContent, trackAddToCart, isReady } = useFacebookPixel();
+  const { trackViewContent, trackAddToCartWithEventId, generateEventId, isReady } = useFacebookPixel();
+  const { trackAddToCart: trackServerAddToCart, trackViewContent: trackServerViewContent } = useServerTracking();
 
   // Fetch social media settings for Call Now and Messenger buttons
   const { data: socialSettings } = useQuery({
@@ -75,10 +77,12 @@ const ProductDetailPage = () => {
   const isInWishlist = product ? wishlistItems.some((item) => item.id === product.id) : false;
   const hasVariations = product?.variations && product.variations.length > 0;
 
-  // Track ViewContent when product loads
+  // Track ViewContent when product loads - both browser pixel and CAPI
   useEffect(() => {
     if (product && isReady) {
       console.log('Firing ViewContent for product:', product.name);
+      
+      // Browser pixel
       trackViewContent({
         content_ids: [product.id],
         content_name: product.name,
@@ -86,8 +90,16 @@ const ProductDetailPage = () => {
         value: product.price,
         currency: 'BDT',
       });
+      
+      // Server-side CAPI
+      trackServerViewContent({
+        contentId: product.id,
+        contentName: product.name,
+        value: product.price,
+        currency: 'BDT',
+      });
     }
-  }, [product, isReady, trackViewContent]);
+  }, [product, isReady, trackViewContent, trackServerViewContent]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -155,13 +167,25 @@ const ProductDetailPage = () => {
     
     dispatch(addToCart({ product, quantity, variation: selectedVariation }));
     dispatch(openCart());
-    // Track AddToCart event
-    console.log('Firing AddToCart for product:', product.name);
-    trackAddToCart({
+    // Track AddToCart event - both browser pixel and server CAPI
+    const eventId = generateEventId('AddToCart');
+    console.log('Firing AddToCart for product:', product.name, 'eventId:', eventId);
+    
+    // Browser pixel
+    trackAddToCartWithEventId({
       content_ids: [product.id],
       content_name: product.name,
       content_type: 'product',
       value: displayPrice * quantity,
+      currency: 'BDT',
+    }, eventId);
+    
+    // Server-side CAPI (runs in parallel)
+    trackServerAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: displayPrice * quantity,
+      quantity: quantity,
       currency: 'BDT',
     });
     
@@ -176,12 +200,25 @@ const ProductDetailPage = () => {
     
     dispatch(addToCart({ product, quantity, variation: selectedVariation }));
     
-    // Track AddToCart event
-    trackAddToCart({
+    // Track AddToCart event - both browser pixel and server CAPI
+    const eventId = generateEventId('AddToCart');
+    console.log('Firing AddToCart (Buy Now) for product:', product.name, 'eventId:', eventId);
+    
+    // Browser pixel
+    trackAddToCartWithEventId({
       content_ids: [product.id],
       content_name: product.name,
       content_type: 'product',
       value: displayPrice * quantity,
+      currency: 'BDT',
+    }, eventId);
+    
+    // Server-side CAPI (runs in parallel)
+    trackServerAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: displayPrice * quantity,
+      quantity: quantity,
       currency: 'BDT',
     });
     
