@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Truck, 
-  Shield, 
+import { getEmbedUrl, normalizeExternalUrl } from "@/lib/videoEmbed";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Truck,
+  Shield,
   Phone,
   CheckCircle2,
   ShoppingBag,
@@ -20,10 +21,15 @@ import {
   Clock,
   Flame,
   Gift,
-  MapPin
+  MapPin,
 } from "lucide-react";
-import { ShippingMethodSelector, ShippingZone, SHIPPING_RATES } from "@/components/checkout/ShippingMethodSelector";
+import {
+  ShippingMethodSelector,
+  ShippingZone,
+  SHIPPING_RATES,
+} from "@/components/checkout/ShippingMethodSelector";
 import { toast } from "sonner";
+
 
 // ====== Interfaces ======
 interface ProductVariation {
@@ -309,27 +315,22 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
     const srcMatch = html.match(/src=["']([^"']+)["']/);
     const width = widthMatch ? parseInt(widthMatch[1]) : 16;
     const height = heightMatch ? parseInt(heightMatch[1]) : 9;
-    
-    // Try to extract Facebook reel URL
-    let fbUrl = '';
+
+    // Try to extract Facebook reel/video URL
+    let fbUrl = "";
     if (hrefMatch) {
-      fbUrl = decodeURIComponent(hrefMatch[1]);
-    } else if (srcMatch && srcMatch[1].includes('facebook.com')) {
+      fbUrl = normalizeExternalUrl(decodeURIComponent(hrefMatch[1]));
+    } else if (srcMatch && srcMatch[1].includes("facebook.com")) {
       const innerHref = srcMatch[1].match(/href=([^&]+)/);
-      if (innerHref) fbUrl = decodeURIComponent(innerHref[1]);
+      if (innerHref) fbUrl = normalizeExternalUrl(decodeURIComponent(innerHref[1]));
     }
-    
+
     return { aspectRatio: width / height, fbUrl };
   };
+
   
-  const getEmbedUrl = (url: string) => {
-    const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
-    
-    if (url.includes('facebook.com')) return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false`;
-    if (url.match(/\.(mp4|webm|ogg)$/i)) return url;
-    return url;
-  };
+  const getEmbedUrlSafe = (url: string) => getEmbedUrl(url);
+
 
   const iframeInfo = isIframe ? extractIframeInfo(videoUrl) : null;
   const isPortrait = iframeInfo && iframeInfo.aspectRatio < 1;
@@ -394,22 +395,24 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
                 playsInline
               />
             ) : (
-              <iframe 
-                src={getEmbedUrl(videoUrl)} 
-                title="Video" 
-                allowFullScreen 
+              <iframe
+                src={getEmbedUrlSafe(videoUrl)}
+                title="Video"
+                allowFullScreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                className="absolute inset-0 w-full h-full border-0" 
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 w-full h-full border-0"
               />
+
             )}
           </div>
           
           {/* Fallback link for Facebook videos */}
           {iframeInfo?.fbUrl && (
             <div className="text-center mt-4">
-              <a 
-                href={iframeInfo.fbUrl} 
-                target="_blank" 
+              <a
+                href={iframeInfo.fbUrl}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-accent hover:text-accent/80 transition-colors text-sm"
               >
@@ -418,6 +421,7 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
               </a>
             </div>
           )}
+
         </div>
       </div>
     </section>
