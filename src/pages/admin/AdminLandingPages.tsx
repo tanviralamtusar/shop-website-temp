@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Plus, Edit, Trash2, Eye, EyeOff, ExternalLink, Copy, Package, TrendingUp, ShoppingCart, Pencil, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff, ExternalLink, Copy, Package, TrendingUp, ShoppingCart, Pencil, Search, CalendarIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,8 +34,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 interface LandingPage {
   id: string;
@@ -72,6 +80,7 @@ const AdminLandingPages = () => {
   const [editProductSlug, setEditProductSlug] = useState<Product | null>(null);
   const [newProductSlug, setNewProductSlug] = useState("");
   const [productSearch, setProductSearch] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const { data: landingPages, isLoading } = useQuery({
     queryKey: ["admin-landing-pages"],
@@ -115,11 +124,22 @@ const AdminLandingPages = () => {
     },
   });
 
-  // Calculate sales stats per slug
+  // Calculate sales stats per slug with optional date filtering
   const salesBySlug = useMemo(() => {
     const stats: Record<string, { orders: number; revenue: number }> = {};
     
     landingOrders?.forEach((order) => {
+      // Date filtering
+      if (dateRange?.from) {
+        const orderDate = new Date(order.created_at);
+        const start = startOfDay(dateRange.from);
+        const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        
+        if (!isWithinInterval(orderDate, { start, end })) {
+          return;
+        }
+      }
+      
       // Extract slug from notes like "LP:product-slug"
       const match = order.notes?.match(/LP:([^\s]+)/);
       if (match) {
@@ -133,7 +153,7 @@ const AdminLandingPages = () => {
     });
     
     return stats;
-  }, [landingOrders]);
+  }, [landingOrders, dateRange]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -467,15 +487,64 @@ const AdminLandingPages = () => {
           </p>
         </CardHeader>
         <CardContent>
-          {/* Search Bar */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search products..."
-              value={productSearch}
-              onChange={(e) => setProductSearch(e.target.value)}
-              className="pl-10"
-            />
+          {/* Search Bar and Date Filter */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Date Range Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal min-w-[240px]",
+                    !dateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "dd/MM/yyyy")} - {format(dateRange.to, "dd/MM/yyyy")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "dd/MM/yyyy")
+                    )
+                  ) : (
+                    <span>তারিখ অনুসারে ফিল্টার</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            {dateRange && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDateRange(undefined)}
+                className="text-destructive"
+              >
+                <X className="h-4 w-4 mr-1" />
+                ক্লিয়ার
+              </Button>
+            )}
           </div>
           
           {productsLoading ? (
