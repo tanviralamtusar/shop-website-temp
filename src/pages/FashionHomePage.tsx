@@ -64,6 +64,7 @@ export default function FashionHomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [homeContent, setHomeContent] = useState<HomePageContent>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -171,6 +172,16 @@ export default function FashionHomePage() {
           .limit(8);
         
         if (newData) setNewArrivals(newData);
+
+        // Fetch recent products (most recently uploaded)
+        const { data: recentData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(8);
+        
+        if (recentData) setRecentProducts(recentData);
 
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         setUser(currentUser);
@@ -820,7 +831,119 @@ export default function FashionHomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Recent Products - সাম্প্রতিক প্রোডাক্ট */}
+      {recentProducts.length > 0 && (
+        <section className="py-12 md:py-16 bg-background">
+          <div className="container-custom">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <span className="text-primary font-medium text-sm tracking-wider uppercase">নতুন আপলোড</span>
+                <h2 className="text-2xl md:text-3xl font-bold mt-1">
+                  সাম্প্রতিক <span className="text-primary">প্রোডাক্ট</span>
+                </h2>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/products')} className="rounded-full">
+                সব দেখুন <ChevronRight className="ml-1 w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {recentProducts.slice(0, 8).map((product: any, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="group"
+                >
+                  <div 
+                    className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                    onClick={() => product.slug && navigate(`/product/${product.slug}`)}
+                  >
+                    {/* Product Image */}
+                    <div className="relative aspect-[3/4] overflow-hidden">
+                      <img
+                        src={product.images?.[0] || `https://images.unsplash.com/photo-1596783074918-c84cb06531ca?w=400&q=80`}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      
+                      {/* Discount Badge */}
+                      {getDiscount(product.price, product.original_price) && (
+                        <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground">
+                          -{getDiscount(product.price, product.original_price)}%
+                        </Badge>
+                      )}
+
+                      {/* New Badge */}
+                      {product.is_new && !getDiscount(product.price, product.original_price) && (
+                        <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
+                          নতুন
+                        </Badge>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md"
+                          onClick={(e) => handleToggleWishlist(product, e)}
+                        >
+                          <Heart className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-destructive text-destructive' : ''}`} />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.slug}`); }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Quick Add / Buy Now Buttons */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform">
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                            onClick={(e) => handleAddToCart(product, e)}
+                          >
+                            <ShoppingBag className="w-4 h-4 mr-2" /> কার্টে যোগ করুন
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            className="w-full rounded-full"
+                            onClick={(e) => handleBuyNow(product, e)}
+                          >
+                            <Zap className="w-4 h-4 mr-2" /> এখনই কিনুন
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <h3 className="font-medium text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-primary font-bold">{formatPrice(product.price)}</span>
+                        {product.original_price && product.original_price > product.price && (
+                          <span className="text-muted-foreground text-sm line-through">
+                            {formatPrice(product.original_price)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       <section className="py-12 md:py-16 bg-secondary/30">
         <div className="container-custom">
           <div className="flex items-center justify-between mb-8">
