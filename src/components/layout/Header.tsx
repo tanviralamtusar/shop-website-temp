@@ -41,7 +41,7 @@ const Header = () => {
       const { data, error } = await supabase
         .from('admin_settings')
         .select('key, value')
-        .in('key', ['site_name', 'site_logo']);
+        .in('key', ['site_name', 'site_logo', 'shop_logo_url']);
       
       if (error) throw error;
       
@@ -56,7 +56,7 @@ const Header = () => {
   });
 
   const siteName = headerSettings?.site_name || 'খেজুর বাজার';
-  const siteLogo = headerSettings?.site_logo || defaultLogo;
+  const siteLogo = headerSettings?.site_logo || headerSettings?.shop_logo_url || defaultLogo;
 
   useEffect(() => {
     const handleScroll = () => {
