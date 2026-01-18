@@ -91,25 +91,23 @@ const Header = () => {
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <div className="flex items-center gap-2">
-              {siteLogo ? (
-                <img
-                  src={siteLogo}
-                  alt={siteName || 'Site Logo'}
-                  className="h-10 w-auto object-contain"
-                  onError={(e) => {
-                    // Fallback to default logo if URL fails
-                    const target = e.target as HTMLImageElement;
-                    if (target.src !== defaultLogo) {
-                      target.src = defaultLogo;
-                    }
-                  }}
-                />
-              ) : null}
+            {siteLogo ? (
+              <img
+                src={siteLogo}
+                alt={siteName || 'Site Logo'}
+                className="h-10 w-auto object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== defaultLogo) {
+                    target.src = defaultLogo;
+                  }
+                }}
+              />
+            ) : (
               <span className="text-base md:text-lg font-semibold text-foreground leading-none">
                 {siteName}
               </span>
-            </div>
+            )}
           </Link>
 
           {/* Search Bar - Desktop */}
