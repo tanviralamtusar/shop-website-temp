@@ -298,6 +298,39 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Recent Products - সাম্প্রতিক প্রোডাক্ট */}
+      {recentProducts.length > 0 && (
+        <section className="py-16 md:py-24 bg-muted/30">
+          <div className="container-custom">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex items-center justify-between mb-12"
+            >
+              <div>
+                <span className="text-secondary font-medium">নতুন আপলোড</span>
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
+                  সাম্প্রতিক প্রোডাক্ট
+                </h2>
+              </div>
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/products">
+                  সব দেখুন
+                  <ArrowRight className="h-5 w-5 mr-2" />
+                </Link>
+              </Button>
+            </motion.div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {recentProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* About Section */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container-custom">
@@ -420,40 +453,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Recent Products - সাম্প্রতিক প্রোডাক্ট */}
-      {recentProducts.length > 0 && (
-        <section className="py-16 md:py-24 bg-muted/30">
-          <div className="container-custom">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <span className="text-secondary font-medium">নতুন আপলোড</span>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
-                সাম্প্রতিক প্রোডাক্ট
-              </h2>
-            </motion.div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {recentProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
-            </div>
-
-            <div className="mt-10 text-center">
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/products">
-                  সব প্রোডাক্ট দেখুন
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Featured Products */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container-custom">
@@ -461,27 +460,26 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="flex items-center justify-between mb-12"
           >
-            <span className="text-secondary font-medium">{featuredSection.tagline}</span>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
-              {featuredSection.title}
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {featuredProducts.slice(0, 8).map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
+            <div>
+              <span className="text-secondary font-medium">{featuredSection.tagline}</span>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
+                {featuredSection.title}
+              </h2>
+            </div>
             <Button variant="outline" size="lg" asChild>
               <Link to="/products">
                 {featuredSection.buttonText}
                 <ArrowRight className="h-5 w-5 mr-2" />
               </Link>
             </Button>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {featuredProducts.slice(0, 8).map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} />
+            ))}
           </div>
         </div>
       </section>
