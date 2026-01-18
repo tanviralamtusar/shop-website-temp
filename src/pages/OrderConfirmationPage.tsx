@@ -258,8 +258,8 @@ const OrderConfirmationPage = () => {
           {/* Contact */}
           <div className="text-center mb-8 p-4 bg-gray-50 rounded-xl">
             <p className="text-gray-600 mb-2">যেকোনো প্রশ্নে কল করুন</p>
-            <a href="tel:+8801704466603" className="text-xl font-bold text-primary hover:underline">
-              📞 +880 1704-466603
+            <a href="tel:+8801995909243" className="text-xl font-bold text-primary hover:underline">
+              📞 +880 1995-909243
             </a>
           </div>
 
