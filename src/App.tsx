@@ -10,6 +10,7 @@ import { FacebookPixelTracker } from '@/components/tracking/FacebookPixelTracker
 import GoogleAnalyticsTracker from '@/components/tracking/GoogleAnalyticsTracker';
 import { TikTokPixelTracker } from '@/components/tracking/TikTokPixelTracker';
 import CartDrawer from '@/components/cart/CartDrawer';
+import FaviconLoader from '@/components/FaviconLoader';
 
 import FashionHomePage from '@/pages/FashionHomePage';
 import OrderConfirmationPage from '@/pages/OrderConfirmationPage';
@@ -59,6 +60,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <FaviconLoader />
             <FacebookPixelTracker />
             <GoogleAnalyticsTracker />
             <TikTokPixelTracker />

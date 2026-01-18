@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function FaviconLoader() {
   useEffect(() => {
+    let intervalId: number | undefined;
+
     const loadSiteSettings = async () => {
       try {
         const { data, error } = await supabase
@@ -32,9 +34,9 @@ export default function FaviconLoader() {
             link.href = settings.favicon_url;
           }
 
-          // Update site title (check both site_name and shop_name)
+          // Update site title (tab hover)
           const siteName = settings.site_name || settings.shop_name;
-          if (siteName) {
+          if (siteName && document.title !== siteName) {
             document.title = siteName;
           }
         }
@@ -43,7 +45,24 @@ export default function FaviconLoader() {
       }
     };
 
+    // Initial load
     loadSiteSettings();
+
+    // Refresh when user comes back to the tab
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadSiteSettings();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    // Periodic refresh (helps when settings changed in admin without full reload)
+    intervalId = window.setInterval(loadSiteSettings, 30_000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      if (intervalId) window.clearInterval(intervalId);
+    };
   }, []);
 
   return null;
