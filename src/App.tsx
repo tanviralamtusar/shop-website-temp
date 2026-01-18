@@ -25,6 +25,7 @@ import CartPage from '@/pages/CartPage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import ProductLandingPage from '@/pages/ProductLandingPage';
 import LandingPage from '@/pages/LandingPage';
+import CottonTarselLandingPage from '@/pages/CottonTarselLandingPage';
 
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -82,6 +83,7 @@ const App = () => (
               {/* Landing Pages */}
               <Route path="/step/:slug" element={<ProductLandingPage />} />
               <Route path="/lp/:slug" element={<LandingPage />} />
+              <Route path="/cotton-tarsel" element={<CottonTarselLandingPage />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
