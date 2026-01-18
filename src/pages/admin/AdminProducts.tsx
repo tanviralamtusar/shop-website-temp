@@ -105,9 +105,9 @@ const initialFormState = {
 };
 
 const defaultVariations: ProductVariation[] = [
-  { clientId: crypto.randomUUID(), name: '1 KG', price: 0, stock: 100, sort_order: 1, is_active: true },
-  { clientId: crypto.randomUUID(), name: '3 KG', price: 0, stock: 100, sort_order: 2, is_active: true },
-  { clientId: crypto.randomUUID(), name: '5 KG', price: 0, stock: 100, sort_order: 3, is_active: true },
+  { clientId: crypto.randomUUID(), name: 'Size 36', price: 0, stock: 100, sort_order: 1, is_active: true },
+  { clientId: crypto.randomUUID(), name: 'Size 38', price: 0, stock: 100, sort_order: 2, is_active: true },
+  { clientId: crypto.randomUUID(), name: 'Size 40', price: 0, stock: 100, sort_order: 3, is_active: true },
 ];
 
 export default function AdminProducts() {
@@ -166,8 +166,13 @@ export default function AdminProducts() {
     }
 
     if (data && data.length > 0) {
+      // Deduplicate by id to prevent same variations appearing multiple times
+      const uniqueVariations = data.filter(
+        (v, index, self) => index === self.findIndex((t) => t.id === v.id)
+      );
+      
       setVariations(
-        data.map((v) => ({
+        uniqueVariations.map((v) => ({
           id: v.id,
           clientId: v.id ?? crypto.randomUUID(),
           name: v.name,
@@ -711,12 +716,12 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              {/* Weight Variations Section */}
+              {/* Size Variations Section */}
               <div className="border-t pt-4 mt-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Package className="h-5 w-5 text-primary" />
-                    <Label className="text-base font-semibold">ওজন ভ্যারিয়েশন (Weight Variations)</Label>
+                    <Label className="text-base font-semibold">সাইজ ভ্যারিয়েশন (Size Variations)</Label>
                   </div>
                   <div className="flex items-center gap-2">
                     <Switch
@@ -736,7 +741,7 @@ export default function AdminProducts() {
                 {hasVariations && (
                   <div className="space-y-3 bg-muted/50 rounded-lg p-4">
                     <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground mb-2">
-                      <div className="col-span-3">ওজন (Weight)</div>
+                      <div className="col-span-3">সাইজ (Size)</div>
                       <div className="col-span-3">দাম (Price) ৳</div>
                       <div className="col-span-3">আগের দাম</div>
                       <div className="col-span-2">স্টক</div>
@@ -747,7 +752,7 @@ export default function AdminProducts() {
                       <div key={variation.clientId} className="grid grid-cols-12 gap-2 items-center">
                         <Input
                           className="col-span-3"
-                          placeholder="1 KG"
+                          placeholder="Size 36"
                           value={variation.name}
                           onChange={(e) => handleVariationChange(variation.clientId, 'name', e.target.value)}
                         />
@@ -812,9 +817,6 @@ export default function AdminProducts() {
                       আরো যোগ করুন
                     </Button>
 
-                    <p className="text-xs text-muted-foreground mt-2">
-                      💡 ৫ কেজি ভ্যারিয়েশনে ফ্রি ডেলিভারি দেখানো হবে
-                    </p>
                   </div>
                 )}
               </div>
