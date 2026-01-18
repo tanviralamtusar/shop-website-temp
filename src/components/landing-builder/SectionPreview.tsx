@@ -531,8 +531,8 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
               <iframe
                 src={embedUrl}
                 className="w-full rounded-lg shadow-lg"
-                style={isFacebookEmbed ? { 
-                  border: 'none', 
+                style={isFacebookEmbed ? {
+                  border: 'none',
                   overflow: 'hidden',
                   width: '100%',
                   height: '500px'
@@ -542,7 +542,6 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
                 referrerPolicy="no-referrer-when-downgrade"
                 scrolling="no"
               />
-
             ) : (
               <video
                 src={videoUrl}
@@ -553,6 +552,19 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
               />
             )}
           </div>
+
+          {isFacebookEmbed && (
+            <div className="mt-3 flex flex-col items-center gap-2 text-center">
+              <p className="text-sm text-muted-foreground">
+                If Facebook shows a login screen, the reel/video isn’t public or embeddable.
+              </p>
+              <Button variant="outline" asChild>
+                <a href={videoUrl.startsWith("http") ? videoUrl : `https://${videoUrl}`} target="_blank" rel="noreferrer">
+                  Open on Facebook
+                </a>
+              </Button>
+            </div>
+          )}
         </div>
       </section>
     );
