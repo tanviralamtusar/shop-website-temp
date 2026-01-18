@@ -32,6 +32,7 @@ interface OrderItem {
   product: Product;
   quantity: number;
   variation?: ProductVariation;
+  customPrice?: number; // Allow custom price override (can be 0 for free)
 }
 
 interface ManualOrderDialogProps {
@@ -401,13 +402,30 @@ export function ManualOrderDialog({ open, onOpenChange, onOrderCreated }: Manual
   };
 
   const subtotal = orderItems.reduce((sum, item) => {
-    const itemPrice = item.variation ? item.variation.price : item.product.price;
+    // Use custom price if set (even if 0), otherwise use variation/product price
+    const basePrice = item.variation ? item.variation.price : item.product.price;
+    const itemPrice = item.customPrice !== undefined ? item.customPrice : basePrice;
     return sum + itemPrice * item.quantity;
   }, 0);
   const discountAmount = Number(discount) || 0;
   const advanceAmount = Number(advance) || 0;
   const shippingCost = Number(deliveryCharge) || 0;
   const grandTotal = subtotal - discountAmount + shippingCost - advanceAmount;
+
+  // Update custom price for an item
+  const updateCustomPrice = (productId: string, variationId: string | undefined, price: number | undefined) => {
+    setOrderItems(orderItems.map(item => {
+      if (item.product.id === productId) {
+        if (variationId && item.variation?.id === variationId) {
+          return { ...item, customPrice: price };
+        }
+        if (!variationId && !item.variation) {
+          return { ...item, customPrice: price };
+        }
+      }
+      return item;
+    }));
+  };
 
   const resetForm = () => {
     setOrderItems([]);
@@ -538,7 +556,9 @@ export function ManualOrderDialog({ open, onOpenChange, onOrderCreated }: Manual
         body: {
           userId: null,
           items: orderItems.map(item => {
-            const itemPrice = item.variation ? item.variation.price : item.product.price;
+            const basePrice = item.variation ? item.variation.price : item.product.price;
+            // Use custom price if set (can be 0), otherwise use base price
+            const itemPrice = item.customPrice !== undefined ? item.customPrice : basePrice;
             const variationName = item.variation?.name || null;
             return {
               productId: item.product.id,
@@ -809,7 +829,8 @@ export function ManualOrderDialog({ open, onOpenChange, onOrderCreated }: Manual
                   <div className="space-y-2">
                     {orderItems.map((item, index) => {
                       const itemKey = item.variation ? `${item.product.id}-${item.variation.id}` : item.product.id;
-                      const itemPrice = item.variation ? item.variation.price : item.product.price;
+                      const basePrice = item.variation ? item.variation.price : item.product.price;
+                      const displayPrice = item.customPrice !== undefined ? item.customPrice : basePrice;
                       return (
                         <div
                           key={itemKey}
@@ -829,7 +850,28 @@ export function ManualOrderDialog({ open, onOpenChange, onOrderCreated }: Manual
                                 {item.variation.name}
                               </Badge>
                             )}
-                            <p className="text-xs text-muted-foreground">৳{itemPrice}</p>
+                            {/* Editable price input */}
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="text-xs text-muted-foreground">৳</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={displayPrice}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  updateCustomPrice(
+                                    item.product.id,
+                                    item.variation?.id,
+                                    val === '' ? undefined : Number(val)
+                                  );
+                                }}
+                                className="h-6 w-16 text-xs px-1 py-0"
+                                placeholder={basePrice.toString()}
+                              />
+                              {item.customPrice !== undefined && item.customPrice !== basePrice && (
+                                <span className="text-xs text-muted-foreground line-through">৳{basePrice}</span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
@@ -859,7 +901,7 @@ export function ManualOrderDialog({ open, onOpenChange, onOrderCreated }: Manual
                             </Button>
                           </div>
                           <p className="font-medium text-sm w-16 text-right">
-                            ৳{itemPrice * item.quantity}
+                            ৳{displayPrice * item.quantity}
                           </p>
                         </div>
                       );
