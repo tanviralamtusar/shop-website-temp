@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/accordion";
 import { ShippingMethodSelector, ShippingZone, SHIPPING_RATES } from "@/components/checkout/ShippingMethodSelector";
 import { toast } from "sonner";
+import { getEmbedUrl as getVideoEmbedUrl } from "@/lib/videoEmbed";
 
 interface Section {
   id: string;
@@ -998,27 +999,12 @@ const SectionRenderer = ({ section, theme, slug }: SectionRendererProps) => {
       const videoUrl = settings.videoUrl || settings.youtubeUrl;
       if (!videoUrl) return null;
 
-      // Convert YouTube watch URLs to embed URLs
-      const getEmbedUrl = (url: string): string => {
-        // Already an embed URL
-        if (url.includes("youtube.com/embed") || url.includes("vimeo.com")) {
-          return url;
-        }
-        // YouTube Shorts URL
-        const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
-        if (shortsMatch) {
-          return `https://www.youtube.com/embed/${shortsMatch[1]}`;
-        }
-        // YouTube watch URL or youtu.be
-        const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-        if (youtubeMatch) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-        }
-        return url;
-      };
-
-      const embedUrl = getEmbedUrl(videoUrl);
-      const isEmbed = embedUrl.includes("youtube.com/embed") || embedUrl.includes("vimeo.com");
+      const embedUrl = getVideoEmbedUrl(videoUrl);
+      const isFacebookEmbed = embedUrl.includes("facebook.com/plugins/video.php");
+      const isEmbed = 
+        embedUrl.includes("youtube.com/embed") || 
+        embedUrl.includes("vimeo.com") || 
+        isFacebookEmbed;
 
       return (
         <section 
@@ -1032,13 +1018,21 @@ const SectionRenderer = ({ section, theme, slug }: SectionRendererProps) => {
             {settings.title && (
               <h2 className="text-2xl font-bold text-center mb-6">{settings.title}</h2>
             )}
-            <div className="aspect-video">
+            <div className={isFacebookEmbed ? "w-full" : "aspect-video"}>
               {isEmbed ? (
                 <iframe
                   src={embedUrl}
-                  className="w-full h-full rounded-lg shadow-lg"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  className="w-full rounded-lg shadow-lg"
+                  style={isFacebookEmbed ? { 
+                    border: 'none', 
+                    overflow: 'hidden',
+                    width: '100%',
+                    height: '500px'
+                  } : { height: '100%' }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  scrolling="no"
                 />
               ) : (
                 <video

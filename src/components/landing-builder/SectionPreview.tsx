@@ -513,10 +513,11 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
     }
 
     const embedUrl = getEmbedUrl(videoUrl);
+    const isFacebookEmbed = embedUrl.includes("facebook.com/plugins/video.php");
     const isEmbed =
       embedUrl.includes("youtube.com/embed") ||
       embedUrl.includes("vimeo.com") ||
-      embedUrl.includes("facebook.com/plugins/video.php");
+      isFacebookEmbed;
 
 
     return (
@@ -525,14 +526,21 @@ export const SectionPreview = ({ section, theme }: SectionPreviewProps) => {
           {settings.title && (
             <h2 className="text-2xl font-bold text-center mb-6" style={{ color: settings.textColor }}>{settings.title}</h2>
           )}
-          <div className="aspect-video">
+          <div className={isFacebookEmbed ? "w-full" : "aspect-video"}>
             {isEmbed ? (
               <iframe
                 src={embedUrl}
-                className="w-full h-full rounded-lg shadow-lg"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                className="w-full rounded-lg shadow-lg"
+                style={isFacebookEmbed ? { 
+                  border: 'none', 
+                  overflow: 'hidden',
+                  width: '100%',
+                  height: '500px'
+                } : { height: '100%' }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
+                scrolling="no"
               />
 
             ) : (
