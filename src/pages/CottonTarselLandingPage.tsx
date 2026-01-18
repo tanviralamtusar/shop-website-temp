@@ -127,7 +127,7 @@ const UrgencyBanner = memo(() => {
 });
 UrgencyBanner.displayName = 'UrgencyBanner';
 
-// ====== Hero Section with Two-Column Layout on Desktop ======
+// ====== Hero Section - Mobile First with Product Info on Top ======
 const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSelect }: { 
   products: ProductData[]; 
   onBuyNow: () => void;
@@ -156,19 +156,47 @@ const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSele
     : 0;
 
   return (
-    <section className="relative py-6 sm:py-8 md:py-12 overflow-hidden bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50">
+    <section className="relative py-4 sm:py-6 md:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-40 h-40 bg-rose-200/30 rounded-full blur-3xl" />
         <div className="absolute bottom-10 right-10 w-60 h-60 bg-pink-200/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-amber-100/20 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10 max-w-6xl">
-        {/* Two Column Layout for Desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
-          {/* Left Column - Image */}
-          <div className="order-1">
+        {/* Desktop: Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-10 items-center">
+          
+          {/* Left Column - Image (on mobile shows after product info) */}
+          <div className="order-2 lg:order-1">
+            {/* Color Selector - On top of image */}
+            <div id="product-selector" className="flex justify-center gap-3 mb-4">
+              {products.map((product) => (
+                <motion.button
+                  key={product.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onProductSelect(product.id)}
+                  className={`relative px-4 py-2 rounded-full font-semibold transition-all text-sm ${
+                    selectedProductId === product.id
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg scale-105'
+                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-rose-300'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <div 
+                      className={`w-3 h-3 rounded-full border-2 ${
+                        product.slug.includes('pink') 
+                          ? 'bg-pink-300 border-pink-400' 
+                          : 'bg-blue-300 border-blue-400'
+                      }`} 
+                    />
+                    {product.slug.includes('pink') ? 'লাইট পিংক' : 'ব্লু'}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeProduct?.id}
@@ -184,7 +212,7 @@ const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSele
                   </Badge>
                 )}
                 
-                <div className="relative aspect-square rounded-3xl overflow-hidden shadow-2xl bg-white ring-4 ring-rose-100 max-w-md mx-auto lg:max-w-none">
+                <div className="relative aspect-square rounded-3xl overflow-hidden shadow-2xl bg-white ring-4 ring-rose-100 max-w-sm mx-auto lg:max-w-md">
                   {activeProduct?.images?.[currentImage] && (
                     <OptimizedImage 
                       src={activeProduct.images[currentImage]} 
@@ -198,22 +226,22 @@ const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSele
                     <>
                       <button
                         onClick={() => setCurrentImage((currentImage - 1 + activeProduct.images.length) % activeProduct.images.length)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2.5 shadow-xl hover:scale-110 transition-all"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-xl hover:scale-110 transition-all"
                       >
-                        <ChevronLeft className="h-5 w-5 text-gray-700" />
+                        <ChevronLeft className="h-4 w-4 text-gray-700" />
                       </button>
                       <button
                         onClick={() => setCurrentImage((currentImage + 1) % activeProduct.images.length)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2.5 shadow-xl hover:scale-110 transition-all"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-xl hover:scale-110 transition-all"
                       >
-                        <ChevronRight className="h-5 w-5 text-gray-700" />
+                        <ChevronRight className="h-4 w-4 text-gray-700" />
                       </button>
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/20 backdrop-blur-sm px-3 py-2 rounded-full">
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/20 backdrop-blur-sm px-2 py-1.5 rounded-full">
                         {activeProduct.images.map((_, idx) => (
                           <button
                             key={idx}
                             onClick={() => setCurrentImage(idx)}
-                            className={`h-2 rounded-full transition-all ${idx === currentImage ? "bg-white w-6" : "bg-white/50 w-2"}`}
+                            className={`h-1.5 rounded-full transition-all ${idx === currentImage ? "bg-white w-5" : "bg-white/50 w-1.5"}`}
                           />
                         ))}
                       </div>
@@ -223,12 +251,12 @@ const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSele
 
                 {/* Thumbnails */}
                 {activeProduct?.images && activeProduct.images.length > 1 && (
-                  <div className="flex gap-2 mt-4 justify-center">
+                  <div className="flex gap-2 mt-3 justify-center">
                     {activeProduct.images.slice(0, 6).map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentImage(idx)}
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                        className={`w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden border-2 transition-all ${
                           idx === currentImage 
                             ? "border-rose-500 scale-110 shadow-lg" 
                             : "border-gray-200 opacity-60 hover:opacity-100"
@@ -243,13 +271,13 @@ const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSele
             </AnimatePresence>
           </div>
 
-          {/* Right Column - Product Info */}
-          <div className="order-2 text-center lg:text-left">
+          {/* Right Column - Product Info (on mobile shows first) */}
+          <div className="order-1 lg:order-2 text-center">
             {/* Header Badge */}
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4"
+              className="mb-3"
             >
               <span className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
                 <Flame className="h-4 w-4" />
@@ -257,85 +285,36 @@ const HeroSection = memo(({ products, onBuyNow, selectedProductId, onProductSele
               </span>
             </motion.div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
               প্রিমিয়াম কটন টারসেল
             </h1>
-            <p className="text-gray-600 text-base lg:text-lg mb-6">
+            <p className="text-gray-600 text-sm lg:text-base mb-4">
               টারসেল ডিজাইন, প্রিমিয়াম ফেব্রিক্স
             </p>
 
             {/* Price Section - Prominent */}
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 inline-block lg:block">
-              <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
+            <div className="mb-4">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 {activeProduct?.original_price && activeProduct.original_price > activeProduct.price && (
-                  <span className="text-gray-400 line-through text-xl sm:text-2xl">
+                  <span className="text-gray-400 line-through text-lg sm:text-xl">
                     ৳{activeProduct.original_price.toLocaleString()}
                   </span>
                 )}
-                <span className="text-rose-600 font-bold text-3xl sm:text-4xl lg:text-5xl">
+                <span className="text-rose-600 font-bold text-2xl sm:text-3xl lg:text-4xl">
                   ৳{activeProduct?.price?.toLocaleString()}
                 </span>
-                {discount > 0 && (
-                  <Badge className="bg-green-500 text-white text-sm px-3 py-1 font-bold">
-                    {discount}% সেভ
-                  </Badge>
-                )}
               </div>
             </div>
 
-            {/* Color Selector */}
-            <div id="product-selector" className="flex justify-center lg:justify-start gap-3 mb-6">
-              {products.map((product) => (
-                <motion.button
-                  key={product.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => onProductSelect(product.id)}
-                  className={`relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold transition-all ${
-                    selectedProductId === product.id
-                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg scale-105'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-rose-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <div 
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        product.slug.includes('pink') 
-                          ? 'bg-pink-300 border-pink-400' 
-                          : 'bg-blue-300 border-blue-400'
-                      }`} 
-                    />
-                    {product.slug.includes('pink') ? 'লাইট পিংক' : 'ব্লু'}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* CTA Button */}
+            {/* CTA Button - Rose/Pink gradient, not golden */}
             <Button
               onClick={onBuyNow}
               size="lg"
-              className="px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg font-bold bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02]"
+              className="px-8 py-5 text-base font-bold bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02]"
             >
               <ShoppingBag className="mr-2 h-5 w-5" />
               এখনই অর্ডার করুন
             </Button>
-
-            {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-6">
-              {[
-                { icon: Shield, title: "১০০% গ্যারান্টি" },
-                { icon: Truck, title: "সারাদেশে ডেলিভারি" },
-                { icon: Gift, title: "ক্যাশ অন ডেলিভারি" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-1 p-2 sm:p-3 bg-white/60 backdrop-blur-sm rounded-xl border border-rose-100">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-rose-100 rounded-full flex items-center justify-center">
-                    <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-rose-600" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">{item.title}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
