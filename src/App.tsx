@@ -85,7 +85,9 @@ const App = () => (
               <Route path="/step/:slug" element={<ProductLandingPage />} />
               <Route path="/lp/:slug" element={<LandingPage />} />
               <Route path="/cotton-tarsel" element={<CottonTarselLandingPage />} />
+               <Route path="/cotton-tarsel-collection" element={<CottonTarselLandingPage />} />
               <Route path="/digital-tarsel" element={<DigitalTarselLandingPage />} />
+               <Route path="/digital-tarsel-collection" element={<DigitalTarselLandingPage />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
