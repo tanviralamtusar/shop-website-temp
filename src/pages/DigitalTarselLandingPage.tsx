@@ -609,12 +609,13 @@ const VideoSection = memo(({ videoUrl }: { videoUrl?: string }) => {
 VideoSection.displayName = "VideoSection";
 
 // ====== Checkout Section ======
-const CheckoutSection = memo(({ products, onSubmit, isSubmitting, selectedProductId, onProductSelect }: { 
+const CheckoutSection = memo(({ products, onSubmit, isSubmitting, selectedProductId, onProductSelect, onPhoneCapture }: { 
   products: ProductData[]; 
   onSubmit: (form: OrderForm) => void; 
   isSubmitting: boolean;
   selectedProductId: string;
   onProductSelect: (productId: string) => void;
+  onPhoneCapture?: (phone: string) => void;
 }) => {
   const [form, setForm] = useState<OrderForm>({
     name: "", phone: "", address: "", note: "", quantity: 1, 
@@ -624,6 +625,17 @@ const CheckoutSection = memo(({ products, onSubmit, isSubmitting, selectedProduc
   const [shippingZone, setShippingZone] = useState<ShippingZone>('outside_dhaka');
   const sizeSelectionRef = useRef<HTMLDivElement>(null);
   const [productImageIndex, setProductImageIndex] = useState<Record<string, number>>({});
+  const hasPhoneCaptured = useRef(false);
+
+  // Early phone capture for Facebook Pixel match quality
+  useEffect(() => {
+    const phone = form.phone.replace(/\s/g, '');
+    if (phone.length >= 11 && /^01[3-9]\d{8}$/.test(phone) && !hasPhoneCaptured.current) {
+      hasPhoneCaptured.current = true;
+      onPhoneCapture?.(phone);
+      console.log('[Digital Tarsel] Early phone capture for Pixel:', phone.substring(0, 5) + '...');
+    }
+  }, [form.phone, onPhoneCapture]);
 
   useEffect(() => {
     if (selectedProductId) {
@@ -940,9 +952,17 @@ const DigitalTarselLandingPage = () => {
     isReady: pixelReady, 
     trackViewContentWithEventId, 
     trackInitiateCheckoutWithEventId,
-    generateEventId 
+    generateEventId,
+    setUserData,
   } = useFacebookPixel();
   const serverTracking = useServerTracking();
+
+  // Callback for early phone capture from checkout form
+  const handlePhoneCapture = useCallback((phone: string) => {
+    if (pixelReady) {
+      setUserData({ phone });
+    }
+  }, [pixelReady, setUserData]);
 
   useEffect(() => {
     const checkVisibility = () => {
@@ -1156,6 +1176,7 @@ const DigitalTarselLandingPage = () => {
           isSubmitting={isSubmitting}
           selectedProductId={selectedProductId}
           onProductSelect={setSelectedProductId}
+          onPhoneCapture={handlePhoneCapture}
         />
       </div>
       
