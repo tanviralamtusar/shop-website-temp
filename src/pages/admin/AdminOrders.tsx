@@ -956,6 +956,7 @@ export default function AdminOrders() {
                 <TableHead>Order</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>Products</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Payment</TableHead>
@@ -1006,6 +1007,39 @@ export default function AdminOrders() {
                       <div className="shrink-0 pt-1">
                         <CourierHistoryDialog phone={order.shipping_phone} customerName={order.shipping_name} />
                       </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {order.order_items.slice(0, 3).map((item, idx) => (
+                        <div
+                          key={item.id}
+                          className="relative w-10 h-10 rounded border bg-muted overflow-hidden shrink-0"
+                          title={`${item.product_name}${item.variation_name ? ` (${item.variation_name})` : ''} x${item.quantity}`}
+                        >
+                          {item.product_image ? (
+                            <img
+                              src={item.product_image}
+                              alt={item.product_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                              <Package className="h-4 w-4" />
+                            </div>
+                          )}
+                          {item.quantity > 1 && (
+                            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] px-1 rounded-full min-w-[16px] text-center">
+                              {item.quantity}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                      {order.order_items.length > 3 && (
+                        <div className="w-10 h-10 rounded border bg-muted flex items-center justify-center text-xs text-muted-foreground shrink-0">
+                          +{order.order_items.length - 3}
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
