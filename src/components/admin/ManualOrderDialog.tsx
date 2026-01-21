@@ -596,6 +596,17 @@ export function ManualOrderDialog({ open, onOpenChange, onOrderCreated }: Manual
       });
 
       if (error) throw error;
+      
+      // Check if the response contains an error (e.g., order blocking)
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      
+      // Validate that we got an order number back
+      if (!data?.orderNumber && !data?.orderId) {
+        throw new Error('Order response missing order number');
+      }
 
       toast.success(`Order created successfully! Order #${data.orderNumber || data.orderId}`);
       resetForm();
