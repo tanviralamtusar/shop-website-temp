@@ -267,13 +267,29 @@ serve(async (req) => {
     const cleanedPhone = cleanPhone(phone);
     const cacheKey = `combined_${cleanedPhone}`;
 
-    // Check cache first - this is critical for reducing API calls
+    // Check cache first - this is critical for reducing API calls.
+    // IMPORTANT: If the client is requesting BD Courier data (skipBdCourier=false)
+    // and the cached entry doesn't have BD Courier available, we must bypass cache
+    // so hover/click can actually fetch paid BD data.
     const cached = cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-      console.log("Returning cached result for:", cleanedPhone);
-      return new Response(JSON.stringify({ ...cached.data, cached: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const cacheFresh = !!cached && Date.now() - cached.timestamp < CACHE_TTL_MS;
+    const cachedHasBd = !!cached?.data?.bd_courier_available;
+
+    if (cacheFresh) {
+      const shouldBypassCacheForBdFetch = !skipBdCourier && !cachedHasBd;
+
+      if (!shouldBypassCacheForBdFetch) {
+        console.log("Returning cached result for:", cleanedPhone);
+        return new Response(JSON.stringify({ ...cached.data, cached: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log(
+        "Bypassing cache to fetch BD Courier data for:",
+        cleanedPhone,
+        "(cached entry missing BD data)"
+      );
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
