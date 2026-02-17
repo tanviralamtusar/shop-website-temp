@@ -255,10 +255,18 @@ serve(async (req) => {
     // Generate event ID for deduplication with browser pixel
     const eventId = body.event_id || `${body.event_name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // Always use fresh server-side timestamp for event_time
+    // This must be current Unix timestamp in SECONDS (not ms)
+    // Facebook requires event_time to not be in the future and not before fbc creation time
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    // Validate: clamp to a safe range (not future, not older than 7 days)
+    const sevenDaysAgo = nowSeconds - (7 * 24 * 60 * 60);
+    const eventTime = Math.max(sevenDaysAgo, Math.min(nowSeconds, nowSeconds));
+
     // Build the event
     const event: ConversionEvent = {
       event_name: body.event_name,
-      event_time: Math.floor(Date.now() / 1000),
+      event_time: eventTime,
       event_id: eventId,
       action_source: "website",
       event_source_url: body.event_source_url || "https://naturaltouchbd.net",
@@ -288,6 +296,8 @@ serve(async (req) => {
       has_fbp: !!userData.fbp,
       has_ip: !!userData.client_ip_address,
       has_ua: !!userData.client_user_agent,
+      event_time: eventTime,
+      event_time_iso: new Date(eventTime * 1000).toISOString(),
     });
 
     // Build request payload
