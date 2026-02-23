@@ -71,6 +71,7 @@ function AdminSidebar() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   // Fetch unread contact submissions count
   const { data: unreadContactCount = 0 } = useQuery({
@@ -131,6 +132,9 @@ function AdminSidebar() {
                       <NavLink 
                         to={item.url} 
                         end={item.url === '/admin'}
+                        onClick={() => {
+                          if (isMobile) setOpenMobile(false);
+                        }}
                         className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
                           isActive 
                             ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
@@ -226,9 +230,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-muted/30">
         <AdminSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <AdminHeader />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-4 md:p-6 overflow-auto">
             {children}
           </main>
         </div>

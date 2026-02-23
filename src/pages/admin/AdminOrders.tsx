@@ -185,7 +185,7 @@ export default function AdminOrders() {
     setLoadingStatuses(true);
     try {
       const trackingCodes = ordersWithTracking.map(o => o.tracking_number!);
-      
+
       const { data, error } = await supabase.functions.invoke('steadfast-status', {
         body: { tracking_codes: trackingCodes },
       });
@@ -219,11 +219,11 @@ export default function AdminOrders() {
       order.shipping_phone.includes(search);
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesSource = sourceFilter === 'all' || order.order_source === sourceFilter;
-    
+
     // Date filter
     const orderDate = new Date(order.created_at);
     orderDate.setHours(0, 0, 0, 0);
-    
+
     let matchesDate = true;
     if (dateFrom) {
       const fromDate = new Date(dateFrom);
@@ -235,13 +235,13 @@ export default function AdminOrders() {
       toDate.setHours(23, 59, 59, 999);
       matchesDate = matchesDate && orderDate <= toDate;
     }
-    
+
     // Steadfast filter
     let matchesSteadfast = true;
     if (steadfastFilter !== 'all' && order.tracking_number) {
       const sfStatus = steadfastStatuses[order.tracking_number];
       const deliveryStatus = sfStatus?.delivery_status?.toLowerCase() || sfStatus?.current_status?.toLowerCase() || '';
-      
+
       if (steadfastFilter === 'returned') {
         matchesSteadfast = deliveryStatus.includes('return') || deliveryStatus.includes('cancelled');
       } else if (steadfastFilter === 'delivered') {
@@ -254,7 +254,7 @@ export default function AdminOrders() {
     } else if (steadfastFilter !== 'all' && !order.tracking_number) {
       matchesSteadfast = false;
     }
-    
+
     return matchesSearch && matchesStatus && matchesSource && matchesSteadfast && matchesDate;
   });
 
@@ -264,7 +264,7 @@ export default function AdminOrders() {
       if (!order.tracking_number) return false;
       const sfStatus = steadfastStatuses[order.tracking_number];
       const deliveryStatus = sfStatus?.delivery_status?.toLowerCase() || sfStatus?.current_status?.toLowerCase() || '';
-      
+
       if (filterType === 'returned') {
         return deliveryStatus.includes('return') || deliveryStatus.includes('cancelled');
       } else if (filterType === 'delivered') {
@@ -323,10 +323,10 @@ export default function AdminOrders() {
         .eq('id', selectedOrder.id);
 
       if (error) throw error;
-      
+
       // Update local state
-      setOrders(prev => prev.map(o => 
-        o.id === selectedOrder.id 
+      setOrders(prev => prev.map(o =>
+        o.id === selectedOrder.id
           ? { ...o, invoice_note: invoiceNote || null, steadfast_note: steadfastNote || null }
           : o
       ));
@@ -344,15 +344,15 @@ export default function AdminOrders() {
     try {
       await updateOrderStatus(orderId, newStatus, trackingNumber || undefined);
       toast.success('Order status updated');
-      
+
       // Send SMS notification for status change
       const order = orders.find(o => o.id === orderId);
       if (order) {
         sendStatusSms(order, newStatus);
       }
-      
+
       loadOrders();
-      
+
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder({ ...selectedOrder, status: newStatus, tracking_number: trackingNumber });
       }
@@ -420,10 +420,10 @@ export default function AdminOrders() {
     setSendingToSteadfast(true);
     try {
       const fullAddress = `${order.shipping_street}, ${order.shipping_district}, ${order.shipping_city}${order.shipping_postal_code ? `, ${order.shipping_postal_code}` : ''}`;
-      
+
       // Use steadfast_note if available, otherwise fall back to notes, then to item list
       const noteToSend = order.steadfast_note || order.notes || `Order items: ${order.order_items.map(i => `${i.product_name}${i.variation_name ? ` (${i.variation_name})` : ''} x${i.quantity}`).join(', ')}`;
-      
+
       const { data, error } = await supabase.functions.invoke('steadfast-courier', {
         body: {
           orderId: order.id,
@@ -487,7 +487,7 @@ export default function AdminOrders() {
     setBulkSending(true);
     try {
       const ordersToSend = orders.filter(o => selectedOrderIds.has(o.id));
-      
+
       const orderPayloads = ordersToSend.map(order => {
         const fullAddress = `${order.shipping_street}, ${order.shipping_district}, ${order.shipping_city}${order.shipping_postal_code ? `, ${order.shipping_postal_code}` : ''}`;
         // Use steadfast_note if available, otherwise fall back to notes, then to item list
@@ -516,7 +516,7 @@ export default function AdminOrders() {
       if (data?.results) {
         const successCount = data.results.filter((r: { success: boolean }) => r.success).length;
         const failCount = data.results.filter((r: { success: boolean }) => !r.success).length;
-        
+
         if (failCount > 0) {
           toast.warning(`Sent ${successCount} orders, ${failCount} failed`);
         } else {
@@ -575,7 +575,7 @@ export default function AdminOrders() {
 
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return;
-    
+
     setDeleting(true);
     try {
       await deleteOrder(orderToDelete.id);
@@ -606,10 +606,10 @@ export default function AdminOrders() {
 
       if (error) throw error;
 
-      setOrders(prev => prev.map(o => 
+      setOrders(prev => prev.map(o =>
         o.id === orderId ? { ...o, is_printed: !currentValue } : o
       ));
-      
+
       toast.success(!currentValue ? 'Marked as printed' : 'Marked as not printed');
     } catch (error) {
       toast.error('Failed to update print status');
@@ -635,7 +635,7 @@ export default function AdminOrders() {
     }
 
     const sfStatus = steadfastStatuses[trackingNumber];
-    
+
     if (!sfStatus) {
       if (loadingStatuses) {
         return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
@@ -649,10 +649,10 @@ export default function AdminOrders() {
 
     const deliveryStatus = sfStatus.delivery_status || sfStatus.current_status || 'Unknown';
     const statusLower = deliveryStatus.toLowerCase();
-    
+
     let color = 'bg-gray-500';
     let Icon = Clock;
-    
+
     if (statusLower.includes('delivered')) {
       color = 'bg-green-500';
       Icon = CheckCircle;
@@ -701,55 +701,57 @@ export default function AdminOrders() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold">Orders</h1>
           <p className="text-muted-foreground">Manage and track customer orders</p>
         </div>
-        <Button onClick={() => setIsManualOrderOpen(true)}>
+        <Button onClick={() => setIsManualOrderOpen(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Add Order
         </Button>
       </div>
 
       {/* Source Tabs */}
-      <Tabs value={sourceFilter} onValueChange={setSourceFilter} className="w-full">
-        <TabsList className="h-auto p-1 bg-muted/50">
-          <TabsTrigger 
-            value="all" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4"
-          >
-            All Orders
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
-              {orders.length}
-            </Badge>
-          </TabsTrigger>
-          {sourceOptions.map((source) => {
-            const Icon = source.icon;
-            return (
-              <TabsTrigger 
-                key={source.value} 
-                value={source.value}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 gap-1.5"
-              >
-                <Icon className="h-4 w-4" />
-                {source.label}
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                  {getSourceCount(source.value)}
-                </Badge>
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+      <div className="overflow-x-auto pb-2">
+        <Tabs value={sourceFilter} onValueChange={setSourceFilter} className="w-full">
+          <TabsList className="h-auto p-1 bg-muted/50 inline-flex min-w-full">
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 shrink-0"
+            >
+              All Orders
+              <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                {orders.length}
+              </Badge>
+            </TabsTrigger>
+            {sourceOptions.map((source) => {
+              const Icon = source.icon;
+              return (
+                <TabsTrigger
+                  key={source.value}
+                  value={source.value}
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 gap-1.5 shrink-0"
+                >
+                  <Icon className="h-4 w-4" />
+                  {source.label}
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {getSourceCount(source.value)}
+                  </Badge>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
+      </div>
 
       {/* Status Tabs */}
       <div className="overflow-x-auto">
         <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
           <TabsList className="h-auto p-1 bg-muted/50 inline-flex w-auto min-w-full">
             {statusOptions.map((status) => (
-              <TabsTrigger 
-                key={status.value} 
+              <TabsTrigger
+                key={status.value}
                 value={status.value}
                 className="data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-4"
               >
@@ -759,8 +761,8 @@ export default function AdminOrders() {
                 </Badge>
               </TabsTrigger>
             ))}
-            <TabsTrigger 
-              value="all" 
+            <TabsTrigger
+              value="all"
               className="data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-4"
             >
               All
@@ -830,7 +832,7 @@ export default function AdminOrders() {
 
       <Card>
         <CardHeader>
-        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex items-center gap-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
@@ -840,7 +842,7 @@ export default function AdminOrders() {
                 className="max-w-sm"
               />
             </div>
-            
+
             {/* Date Filter */}
             <div className="flex items-center gap-2 flex-wrap">
               <Popover>
@@ -859,7 +861,7 @@ export default function AdminOrders() {
                   />
                 </PopoverContent>
               </Popover>
-              
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
@@ -876,11 +878,11 @@ export default function AdminOrders() {
                   />
                 </PopoverContent>
               </Popover>
-              
+
               {(dateFrom || dateTo) && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
                   className="text-muted-foreground"
                 >
@@ -890,58 +892,58 @@ export default function AdminOrders() {
               )}
             </div>
           </div>
-          
+
           <div className="flex gap-2 flex-wrap mt-4">
-              {selectedOrderIds.size > 0 && (
-                <>
-                  <Select
-                    onValueChange={handleBulkStatusChange}
-                    disabled={bulkStatusChanging}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder={bulkStatusChanging ? 'Updating...' : `Change ${selectedOrderIds.size} Status`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((status) => {
-                        const Icon = status.icon;
-                        return (
-                          <SelectItem key={status.value} value={status.value}>
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4" />
-                              {status.label}
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsInvoiceDialogOpen(true)}
-                    className="gap-2"
-                  >
-                    <Printer className="h-4 w-4" />
-                    Print {selectedOrderIds.size} Invoice{selectedOrderIds.size > 1 ? 's' : ''}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsStickerDialogOpen(true)}
-                    className="gap-2"
-                  >
-                    <Tag className="h-4 w-4" />
-                    Print {selectedOrderIds.size} Sticker{selectedOrderIds.size > 1 ? 's' : ''}
-                  </Button>
-                  <Button
-                    onClick={handleBulkSendToSteadfast}
-                    disabled={bulkSending}
-                    className="gap-2"
-                  >
-                    <Send className="h-4 w-4" />
-                    {bulkSending ? 'Sending...' : `Send ${selectedOrderIds.size} to Steadfast`}
-                  </Button>
-                </>
-              )}
-            </div>
+            {selectedOrderIds.size > 0 && (
+              <>
+                <Select
+                  onValueChange={handleBulkStatusChange}
+                  disabled={bulkStatusChanging}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={bulkStatusChanging ? 'Updating...' : `Change ${selectedOrderIds.size} Status`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((status) => {
+                      const Icon = status.icon;
+                      return (
+                        <SelectItem key={status.value} value={status.value}>
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {status.label}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsInvoiceDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Print {selectedOrderIds.size} Invoice{selectedOrderIds.size > 1 ? 's' : ''}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsStickerDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <Tag className="h-4 w-4" />
+                  Print {selectedOrderIds.size} Sticker{selectedOrderIds.size > 1 ? 's' : ''}
+                </Button>
+                <Button
+                  onClick={handleBulkSendToSteadfast}
+                  disabled={bulkSending}
+                  className="gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  {bulkSending ? 'Sending...' : `Send ${selectedOrderIds.size} to Steadfast`}
+                </Button>
+              </>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <Table className="min-w-[1400px]">
@@ -977,7 +979,7 @@ export default function AdminOrders() {
                       onCheckedChange={() => toggleOrderSelection(order.id)}
                     />
                   </TableCell>
-                  <TableCell 
+                  <TableCell
                     className="font-medium cursor-pointer hover:text-primary hover:underline"
                     onClick={() => openOrderDetail(order)}
                   >
@@ -988,7 +990,7 @@ export default function AdminOrders() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span 
+                          <span
                             className="truncate cursor-pointer hover:text-primary hover:underline"
                             onClick={() => openOrderDetail(order)}
                           >
@@ -1054,11 +1056,10 @@ export default function AdminOrders() {
                   <TableCell>
                     <button
                       onClick={() => handleTogglePrinted(order.id, order.is_printed)}
-                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                        order.is_printed 
-                          ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                      }`}
+                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${order.is_printed
+                        ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
                       title={order.is_printed ? 'Printed - Click to unmark' : 'Not printed - Click to mark as printed'}
                     >
                       {order.is_printed ? (
@@ -1094,7 +1095,7 @@ export default function AdminOrders() {
                   </TableCell>
                   <TableCell>
                     {order.tracking_number ? (
-                      <a 
+                      <a
                         href={`https://steadfast.com.bd/t/${order.tracking_number}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -1151,7 +1152,7 @@ export default function AdminOrders() {
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium mb-2 flex items-center gap-2">
                     Customer Information
@@ -1260,7 +1261,7 @@ export default function AdminOrders() {
               {/* Notes Section */}
               <div className="border-t pt-4 space-y-4">
                 <h3 className="font-medium">Order Notes</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm text-muted-foreground">Invoice Note (shows on invoice)</Label>
                     <Textarea
@@ -1280,9 +1281,9 @@ export default function AdminOrders() {
                     />
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleSaveNotes}
                   disabled={savingNotes}
                 >
@@ -1292,7 +1293,7 @@ export default function AdminOrders() {
 
               <div className="border-t pt-4 space-y-4">
                 <h3 className="font-medium">Update Status</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select
@@ -1321,7 +1322,7 @@ export default function AdminOrders() {
                     />
                   </div>
                 </div>
-                <div className="flex gap-2 mt-4">
+                <div className="flex flex-col sm:flex-row gap-2 mt-4">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -1370,7 +1371,7 @@ export default function AdminOrders() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Order</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete order <strong>{orderToDelete?.order_number}</strong>? 
+              Are you sure you want to delete order <strong>{orderToDelete?.order_number}</strong>?
               This action cannot be undone and will permanently remove the order and all its items.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1393,7 +1394,7 @@ export default function AdminOrders() {
         onOpenChange={setIsInvoiceDialogOpen}
         onOrdersPrinted={(orderIds) => {
           // Update local state to reflect printed status
-          setOrders(prev => prev.map(o => 
+          setOrders(prev => prev.map(o =>
             orderIds.includes(o.id) ? { ...o, is_printed: true } : o
           ));
           setSelectedOrderIds(new Set());
@@ -1405,7 +1406,7 @@ export default function AdminOrders() {
         open={isStickerDialogOpen}
         onOpenChange={setIsStickerDialogOpen}
         onOrdersPrinted={(orderIds) => {
-          setOrders(prev => prev.map(o => 
+          setOrders(prev => prev.map(o =>
             orderIds.includes(o.id) ? { ...o, is_printed: true } : o
           ));
           setSelectedOrderIds(new Set());
